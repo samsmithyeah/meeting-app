@@ -14,7 +14,7 @@ export default function ParticipantSession() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [participantName, setParticipantName] = useState('')
-  const [participantId, setParticipantId] = useState(null)
+  const [_participantId, setParticipantId] = useState(null)
   const [currentQuestion, setCurrentQuestion] = useState(null)
   const [sessionStatus, setSessionStatus] = useState('waiting')
   const [hasAnswered, setHasAnswered] = useState(false)

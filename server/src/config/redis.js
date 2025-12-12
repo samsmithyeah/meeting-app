@@ -112,8 +112,15 @@ export async function clearTimer(meetingId) {
 export async function clearSession(meetingId) {
   const redis = getRedis()
   if (!redis) return
-  const keys = await redis.keys(`session:${meetingId}:*`)
-  if (keys.length > 0) {
-    await redis.del(...keys)
+
+  const stream = redis.scanStream({ match: `session:${meetingId}:*` })
+  const keysToDelete = []
+  for await (const keys of stream) {
+    if (keys.length) {
+      keysToDelete.push(...keys)
+    }
+  }
+  if (keysToDelete.length > 0) {
+    await redis.del(keysToDelete)
   }
 }

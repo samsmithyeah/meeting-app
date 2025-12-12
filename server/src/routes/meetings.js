@@ -192,7 +192,7 @@ router.post('/:id/start', async (req, res) => {
     const { id } = req.params
 
     // Update meeting status
-    const { data: meeting, error } = await supabase
+    const { error } = await supabase
       .from('meetings')
       .update({ status: 'active', current_question_index: 0 })
       .eq('id', id)

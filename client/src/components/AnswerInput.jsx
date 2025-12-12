@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-export default function AnswerInput({ allowMultiple, onSubmit, timerEnd }) {
+export default function AnswerInput({ allowMultiple, onSubmit, timerEnd: _timerEnd }) {
   const [answers, setAnswers] = useState([''])
   const [isSubmitting, setIsSubmitting] = useState(false)
 

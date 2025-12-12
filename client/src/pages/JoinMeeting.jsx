@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useNavigate, useParams, Link } from 'react-router-dom'
 
 export default function JoinMeeting() {
@@ -10,28 +10,31 @@ export default function JoinMeeting() {
   const [error, setError] = useState('')
   const [meetingInfo, setMeetingInfo] = useState(null)
 
+  const fetchMeetingInfo = useCallback(
+    async (meetingCode) => {
+      try {
+        const response = await fetch(`/api/meetings/code/${meetingCode}`)
+        if (response.ok) {
+          const data = await response.json()
+          setMeetingInfo(data)
+
+          // If this is a facilitator code, redirect to facilitator view
+          if (data.isFacilitator) {
+            navigate(`/facilitate/${meetingCode}`)
+          }
+        }
+      } catch {
+        // Silently fail - will show error on join attempt
+      }
+    },
+    [navigate]
+  )
+
   useEffect(() => {
     if (urlCode) {
       fetchMeetingInfo(urlCode)
     }
-  }, [urlCode])
-
-  const fetchMeetingInfo = async (meetingCode) => {
-    try {
-      const response = await fetch(`/api/meetings/code/${meetingCode}`)
-      if (response.ok) {
-        const data = await response.json()
-        setMeetingInfo(data)
-
-        // If this is a facilitator code, redirect to facilitator view
-        if (data.isFacilitator) {
-          navigate(`/facilitate/${meetingCode}`)
-        }
-      }
-    } catch {
-      // Silently fail - will show error on join attempt
-    }
-  }
+  }, [urlCode, fetchMeetingInfo])
 
   const handleCodeChange = (e) => {
     const value = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '')

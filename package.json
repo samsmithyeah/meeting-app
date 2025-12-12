@@ -13,8 +13,9 @@
     "format": "prettier --write \"client/src/**/*.{js,jsx}\" \"server/src/**/*.js\"",
     "format:check": "prettier --check \"client/src/**/*.{js,jsx}\" \"server/src/**/*.js\"",
     "knip": "knip",
+    "knip:fix": "knip --fix",
     "check:all": "npm run lint && npm run format:check && npm run knip",
-    "fix:all": "npm run lint:fix && npm run format && npm run knip --fix"
+    "fix:all": "npm run lint:fix && npm run format && npm run knip:fix"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",

@@ -1,26 +1,32 @@
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { useSocket } from '../context/SocketContext'
+import { useFacilitatorSocket } from '../hooks/useFacilitatorSocket'
 import QuestionCard from '../components/QuestionCard'
 import AnswerReveal from '../components/AnswerReveal'
 
 export default function FacilitatorSession() {
   const { code } = useParams()
   const navigate = useNavigate()
-  const { socket, connect, isConnected } = useSocket()
 
   const [meeting, setMeeting] = useState(null)
   const [loading, setLoading] = useState(true)
-  const [error, setError] = useState('')
+  const [fetchError, setFetchError] = useState('')
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0)
-  const [sessionStatus, setSessionStatus] = useState('waiting')
-  const [participantCount, setParticipantCount] = useState(0)
-  const [answeredCount, setAnsweredCount] = useState(0)
-  const [revealedAnswers, setRevealedAnswers] = useState(null)
-  const [summary, setSummary] = useState('')
   const [copied, setCopied] = useState(false)
-  const [timerEnd, setTimerEnd] = useState(null)
-  const hasJoined = useRef(false)
+
+  const {
+    sessionStatus,
+    participantCount,
+    answeredCount,
+    revealedAnswers,
+    summary,
+    timerEnd,
+    error: socketError,
+    startQuestion,
+    revealAnswers,
+    nextQuestion,
+    endMeeting
+  } = useFacilitatorSocket(meeting)
 
   // Fetch meeting data
   useEffect(() => {
@@ -41,7 +47,7 @@ export default function FacilitatorSession() {
         setCurrentQuestionIndex(data.currentQuestionIndex || 0)
         setLoading(false)
       } catch (err) {
-        setError(err.message)
+        setFetchError(err.message)
         setLoading(false)
       }
     }
@@ -49,126 +55,38 @@ export default function FacilitatorSession() {
     fetchMeeting()
   }, [code, navigate])
 
-  // Connect to socket when meeting is loaded
-  useEffect(() => {
-    if (meeting && !isConnected) {
-      connect()
-    }
-  }, [meeting, connect, isConnected])
-
-  // Socket event handlers
-  useEffect(() => {
-    if (!socket || !meeting) return
-
-    // Prevent double-joining in React Strict Mode
-    if (!hasJoined.current) {
-      hasJoined.current = true
-      socket.emit('facilitator-join', { meetingId: meeting.id })
-    }
-
-    socket.on('session-state', (state) => {
-      if (state) {
-        setSessionStatus(state.status)
-        setParticipantCount(state.participants?.length || 0)
-        setAnsweredCount(state.answeredParticipants?.length || 0)
-        if (state.timerEnd) setTimerEnd(state.timerEnd)
-      }
-    })
-
-    socket.on('participant-joined', ({ count }) => {
-      setParticipantCount(count)
-    })
-
-    socket.on('participant-left', ({ count }) => {
-      setParticipantCount(count)
-    })
-
-    socket.on('answer-submitted', ({ answeredCount, totalCount }) => {
-      setAnsweredCount(answeredCount)
-      setParticipantCount(totalCount)
-    })
-
-    socket.on('answers-revealed', ({ answers, summary }) => {
-      setRevealedAnswers(answers)
-      setSummary(summary)
-      setSessionStatus('revealed')
-    })
-
-    socket.on('error', ({ message }) => {
-      setError(message)
-    })
-
-    return () => {
-      socket.off('session-state')
-      socket.off('participant-joined')
-      socket.off('participant-left')
-      socket.off('answer-submitted')
-      socket.off('answers-revealed')
-      socket.off('error')
-    }
-  }, [socket, meeting])
-
   const currentQuestion = meeting?.questions?.[currentQuestionIndex]
 
   const startMeeting = async () => {
     try {
       await fetch(`/api/meetings/${meeting.id}/start`, { method: 'POST' })
       setMeeting((prev) => ({ ...prev, status: 'active' }))
-    } catch (err) {
-      setError('Failed to start meeting')
+    } catch {
+      setFetchError('Failed to start meeting')
     }
   }
 
-  const startQuestion = useCallback(() => {
-    if (!socket || !currentQuestion) return
+  const handleStartQuestion = () => {
+    if (!currentQuestion) return
+    startQuestion(currentQuestion.id, currentQuestion.time_limit_seconds)
+  }
 
-    socket.emit('start-question', {
-      meetingId: meeting.id,
-      questionId: currentQuestion.id,
-      timeLimitSeconds: currentQuestion.time_limit_seconds
-    })
+  const handleRevealAnswers = () => {
+    if (!currentQuestion) return
+    revealAnswers(currentQuestion.id)
+  }
 
-    setSessionStatus('answering')
-    setAnsweredCount(0)
-    setRevealedAnswers(null)
-    setSummary('')
-
-    if (currentQuestion.time_limit_seconds) {
-      setTimerEnd(Date.now() + currentQuestion.time_limit_seconds * 1000)
-    }
-  }, [socket, meeting, currentQuestion])
-
-  const revealAnswers = useCallback(() => {
-    if (!socket || !currentQuestion) return
-
-    socket.emit('reveal-answers', {
-      meetingId: meeting.id,
-      questionId: currentQuestion.id
-    })
-  }, [socket, meeting, currentQuestion])
-
-  const nextQuestion = useCallback(() => {
-    if (!socket || currentQuestionIndex >= meeting.questions.length - 1) return
-
+  const handleNextQuestion = () => {
+    if (currentQuestionIndex >= meeting.questions.length - 1) return
     const nextIndex = currentQuestionIndex + 1
-    socket.emit('next-question', {
-      meetingId: meeting.id,
-      nextQuestionIndex: nextIndex
-    })
-
+    nextQuestion(nextIndex)
     setCurrentQuestionIndex(nextIndex)
-    setSessionStatus('waiting')
-    setAnsweredCount(0)
-    setRevealedAnswers(null)
-    setSummary('')
-    setTimerEnd(null)
-  }, [socket, meeting, currentQuestionIndex])
+  }
 
-  const endMeeting = useCallback(() => {
-    if (!socket) return
-    socket.emit('end-meeting', { meetingId: meeting.id })
+  const handleEndMeeting = () => {
+    endMeeting()
     navigate('/')
-  }, [socket, meeting, navigate])
+  }
 
   const copyJoinLink = () => {
     const link = `${window.location.origin}/join/${meeting.participantCode}`
@@ -176,6 +94,8 @@ export default function FacilitatorSession() {
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
   }
+
+  const error = fetchError || socketError
 
   if (loading) {
     return (
@@ -292,7 +212,7 @@ export default function FacilitatorSession() {
             <div className="flex justify-center gap-4">
               {sessionStatus === 'waiting' && (
                 <button
-                  onClick={startQuestion}
+                  onClick={handleStartQuestion}
                   disabled={participantCount === 0}
                   className="bg-indigo-600 hover:bg-indigo-700 disabled:bg-gray-400 text-white px-8 py-3 rounded-lg font-medium transition-colors"
                 >
@@ -302,7 +222,7 @@ export default function FacilitatorSession() {
 
               {sessionStatus === 'answering' && (
                 <button
-                  onClick={revealAnswers}
+                  onClick={handleRevealAnswers}
                   className="bg-green-600 hover:bg-green-700 text-white px-8 py-3 rounded-lg font-medium transition-colors"
                 >
                   Reveal Answers ({answeredCount}/{participantCount})
@@ -313,14 +233,14 @@ export default function FacilitatorSession() {
                 <>
                   {!isLastQuestion ? (
                     <button
-                      onClick={nextQuestion}
+                      onClick={handleNextQuestion}
                       className="bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-3 rounded-lg font-medium transition-colors"
                     >
                       Next Question
                     </button>
                   ) : (
                     <button
-                      onClick={endMeeting}
+                      onClick={handleEndMeeting}
                       className="bg-gray-600 hover:bg-gray-700 text-white px-8 py-3 rounded-lg font-medium transition-colors"
                     >
                       End Meeting
