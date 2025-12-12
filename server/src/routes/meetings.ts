@@ -7,6 +7,41 @@ import type { TypedServer, CreateMeetingRequest } from '../types/index.js'
 const router = Router()
 const generateCode = customAlphabet('ABCDEFGHJKLMNPQRSTUVWXYZ23456789', 6)
 
+// Helper to convert question to camelCase
+function mapQuestionToCamelCase(q: {
+  id: string
+  meeting_id: string
+  text: string
+  order_index: number
+  allow_multiple_answers: boolean
+  time_limit_seconds: number | null
+  status: string
+  ai_summary: string | null
+  created_at: string
+}) {
+  return {
+    id: q.id,
+    meetingId: q.meeting_id,
+    text: q.text,
+    orderIndex: q.order_index,
+    allowMultipleAnswers: q.allow_multiple_answers,
+    timeLimitSeconds: q.time_limit_seconds,
+    status: q.status,
+    aiSummary: q.ai_summary,
+    createdAt: q.created_at
+  }
+}
+
+// Helper to verify facilitator authorization
+async function verifyFacilitator(meetingId: string, facilitatorCode: string): Promise<boolean> {
+  const { data } = await supabase
+    .from('meetings')
+    .select('facilitator_code')
+    .eq('id', meetingId)
+    .single()
+  return data?.facilitator_code === facilitatorCode
+}
+
 // Extend Express Request to include app with io
 interface AppRequest extends Request {
   app: Request['app'] & {
@@ -81,7 +116,7 @@ router.get('/code/:code', async (req: Request<{ code: string }>, res: Response) 
       isFacilitator,
       facilitatorCode: isFacilitator ? meeting.facilitator_code : undefined,
       participantCode: meeting.participant_code,
-      questions: questions || []
+      questions: (questions || []).map(mapQuestionToCamelCase)
     })
   } catch (error) {
     console.error('Get meeting error:', error)
@@ -165,6 +200,12 @@ router.put(
 router.post('/:id/start', async (req: AppRequest, res: Response) => {
   try {
     const { id } = req.params
+    const { facilitatorCode } = req.body as { facilitatorCode?: string }
+
+    // Verify facilitator authorization
+    if (!facilitatorCode || !(await verifyFacilitator(id, facilitatorCode))) {
+      return res.status(403).json({ error: 'Unauthorized: Invalid facilitator code' })
+    }
 
     // Update meeting status
     const { error } = await supabase
@@ -196,6 +237,12 @@ router.post('/:id/start', async (req: AppRequest, res: Response) => {
 router.post('/:id/end', async (req: AppRequest, res: Response) => {
   try {
     const { id } = req.params
+    const { facilitatorCode } = req.body as { facilitatorCode?: string }
+
+    // Verify facilitator authorization
+    if (!facilitatorCode || !(await verifyFacilitator(id, facilitatorCode))) {
+      return res.status(403).json({ error: 'Unauthorized: Invalid facilitator code' })
+    }
 
     const { error } = await supabase.from('meetings').update({ status: 'completed' }).eq('id', id)
 

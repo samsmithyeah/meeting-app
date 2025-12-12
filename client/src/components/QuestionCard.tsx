@@ -85,7 +85,7 @@ export default function QuestionCard({
       )}
 
       {/* Question options indicator */}
-      {question.allow_multiple_answers && status !== 'revealed' && (
+      {question.allowMultipleAnswers && status !== 'revealed' && (
         <p className="mt-3 text-sm text-gray-500 text-center">Multiple answers allowed</p>
       )}
     </div>

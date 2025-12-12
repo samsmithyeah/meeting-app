@@ -38,9 +38,12 @@ CREATE TABLE participants (
   name VARCHAR(100) NOT NULL,
   socket_id VARCHAR(100),
   is_active BOOLEAN DEFAULT true,
-  joined_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  UNIQUE(meeting_id, name)
+  joined_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
+
+-- Unique constraint only for active participants (allows rejoining after disconnect)
+CREATE UNIQUE INDEX participants_meeting_id_name_active_idx
+  ON participants (meeting_id, name) WHERE is_active = true;
 
 -- Answers table
 CREATE TABLE answers (

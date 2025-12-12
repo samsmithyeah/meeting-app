@@ -15,13 +15,13 @@ export interface Meeting {
 
 export interface Question {
   id: string
-  meeting_id?: string
+  meetingId?: string
   text: string
-  order_index?: number
-  allow_multiple_answers?: boolean
-  time_limit_seconds?: number | null
+  orderIndex?: number
+  allowMultipleAnswers?: boolean
+  timeLimitSeconds?: number | null
   status?: 'pending' | 'active' | 'revealed'
-  ai_summary?: string | null
+  aiSummary?: string | null
 }
 
 export interface Answer {

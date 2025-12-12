@@ -59,9 +59,13 @@ export default function FacilitatorSession() {
   const currentQuestion = meeting?.questions?.[currentQuestionIndex]
 
   const startMeeting = async () => {
-    if (!meeting) return
+    if (!meeting?.facilitatorCode) return
     try {
-      await fetch(`/api/meetings/${meeting.id}/start`, { method: 'POST' })
+      await fetch(`/api/meetings/${meeting.id}/start`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ facilitatorCode: meeting.facilitatorCode })
+      })
       setMeeting((prev) => (prev ? { ...prev, status: 'active' } : null))
     } catch {
       setFetchError('Failed to start meeting')
@@ -70,7 +74,7 @@ export default function FacilitatorSession() {
 
   const handleStartQuestion = () => {
     if (!currentQuestion) return
-    startQuestion(currentQuestion.id, currentQuestion.time_limit_seconds)
+    startQuestion(currentQuestion.id, currentQuestion.timeLimitSeconds)
   }
 
   const handleRevealAnswers = () => {

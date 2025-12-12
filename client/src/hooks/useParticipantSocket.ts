@@ -65,7 +65,7 @@ export function useParticipantSocket(
         setCurrentQuestion({
           id: questionId,
           text: question || '',
-          allow_multiple_answers
+          allowMultipleAnswers: allow_multiple_answers
         })
         setSessionStatus('answering')
         setHasAnswered(false)

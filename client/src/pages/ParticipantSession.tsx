@@ -167,7 +167,7 @@ export default function ParticipantSession() {
 
             {!hasAnswered ? (
               <AnswerInput
-                allowMultiple={currentQuestion.allow_multiple_answers ?? false}
+                allowMultiple={currentQuestion.allowMultipleAnswers ?? false}
                 onSubmit={submitAnswer}
               />
             ) : (

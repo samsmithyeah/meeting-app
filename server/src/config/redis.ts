@@ -22,7 +22,8 @@ function getRedis(): Redis | null {
 
       _redis = redis
     } catch (err) {
-      console.warn('Redis initialization failed:', (err as Error).message)
+      console.error('Fatal: Redis initialization failed:', (err as Error).message)
+      process.exit(1)
     }
   }
   return _redis
