@@ -4,16 +4,12 @@ import type { Socket } from 'socket.io-client'
 export interface Meeting {
   id: string
   title: string
-  facilitator_code?: string
-  participant_code: string
-  show_participant_names?: boolean
-  showParticipantNames?: boolean
-  status: 'draft' | 'active' | 'completed'
-  current_question_index?: number | null
-  currentQuestionIndex?: number | null
-  isFacilitator?: boolean
   facilitatorCode?: string
-  participantCode?: string
+  participantCode: string
+  showParticipantNames: boolean
+  status: 'draft' | 'active' | 'completed'
+  currentQuestionIndex: number | null
+  isFacilitator?: boolean
   questions?: Question[]
 }
 
@@ -105,7 +101,6 @@ export interface QuestionCardProps {
 export interface AnswerInputProps {
   allowMultiple: boolean
   onSubmit: (answers: string | string[]) => void
-  timerEnd?: number | null
 }
 
 export interface AnswerRevealProps {

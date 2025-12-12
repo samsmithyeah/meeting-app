@@ -6,14 +6,9 @@ interface AnswerForm {
   text: string
 }
 
-let answerId = 0
-const generateAnswerId = () => `answer-${++answerId}`
+const generateAnswerId = () => crypto.randomUUID()
 
-export default function AnswerInput({
-  allowMultiple,
-  onSubmit,
-  timerEnd: _timerEnd
-}: AnswerInputProps) {
+export default function AnswerInput({ allowMultiple, onSubmit }: AnswerInputProps) {
   const [answers, setAnswers] = useState<AnswerForm[]>([{ id: generateAnswerId(), text: '' }])
   const [isSubmitting, setIsSubmitting] = useState(false)
 

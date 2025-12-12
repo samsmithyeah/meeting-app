@@ -233,26 +233,17 @@ export function setupSocketHandlers(io: TypedServer): void {
         }
 
         // Format answers based on anonymity setting
-        const formattedAnswers = (answers || []).map(
-          (a: {
-            id: string
-            text: string
-            participants?: { name: string } | { name: string }[] | null
-          }) => {
-            const participantData = a.participants
-            const participantName =
-              participantData && !Array.isArray(participantData)
-                ? participantData.name
-                : Array.isArray(participantData) && participantData.length > 0
-                  ? participantData[0].name
-                  : null
-            return {
-              id: a.id,
-              text: a.text,
-              participantName: meeting?.show_participant_names ? participantName : null
-            }
+        const formattedAnswers = (answers || []).map((a) => {
+          const participant = Array.isArray(a.participants)
+            ? a.participants[0]
+            : a.participants
+          const participantName = participant?.name ?? null
+          return {
+            id: a.id,
+            text: a.text,
+            participantName: meeting?.show_participant_names ? participantName : null
           }
-        )
+        })
 
         // Broadcast reveal
         io.to(`meeting:${meetingId}`).emit('answers-revealed', {

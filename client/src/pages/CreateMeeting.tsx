@@ -8,8 +8,7 @@ interface QuestionForm {
   timeLimitSeconds: number | null
 }
 
-let questionId = 0
-const generateQuestionId = () => `question-${++questionId}`
+const generateQuestionId = () => crypto.randomUUID()
 
 export default function CreateMeeting() {
   const navigate = useNavigate()

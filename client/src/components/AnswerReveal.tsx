@@ -30,9 +30,9 @@ export default function AnswerReveal({ answers, summary, showNames }: AnswerReve
       <div className="bg-white rounded-xl shadow-lg p-6">
         <h3 className="font-semibold text-gray-900 mb-4">All Responses ({answers.length})</h3>
         <div className="space-y-3">
-          {answers.map((answer, index) => (
+          {answers.map((answer) => (
             <div
-              key={answer.id || index}
+              key={answer.id}
               className="p-4 bg-gray-50 rounded-lg border border-gray-100"
             >
               <p className="text-gray-800">{answer.text}</p>

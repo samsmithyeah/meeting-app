@@ -169,7 +169,6 @@ export default function ParticipantSession() {
               <AnswerInput
                 allowMultiple={currentQuestion.allow_multiple_answers ?? false}
                 onSubmit={submitAnswer}
-                timerEnd={timerEnd}
               />
             ) : (
               <div className="bg-green-50 rounded-xl p-6 text-center">

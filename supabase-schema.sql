@@ -5,8 +5,8 @@
 CREATE TABLE meetings (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   title VARCHAR(255) NOT NULL,
-  facilitator_code VARCHAR(8) UNIQUE NOT NULL,
-  participant_code VARCHAR(8) UNIQUE NOT NULL,
+  facilitator_code VARCHAR(6) UNIQUE NOT NULL,
+  participant_code VARCHAR(6) UNIQUE NOT NULL,
   status VARCHAR(20) DEFAULT 'draft',
   current_question_index INTEGER DEFAULT 0,
   show_participant_names BOOLEAN DEFAULT true,

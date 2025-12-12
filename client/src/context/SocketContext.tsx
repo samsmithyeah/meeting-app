@@ -13,9 +13,7 @@ export function SocketProvider({ children }: SocketProviderProps) {
   const [isConnected, setIsConnected] = useState(false)
 
   useEffect(() => {
-    const socketInstance: TypedSocket = io(import.meta.env.VITE_API_URL, {
-      autoConnect: false
-    })
+    const socketInstance: TypedSocket = io({ autoConnect: false })
 
     socketInstance.on('connect', () => {
       setIsConnected(true)
