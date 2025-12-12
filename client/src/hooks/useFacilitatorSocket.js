@@ -22,7 +22,7 @@ export function useFacilitatorSocket(meeting) {
 
   // Socket event handlers
   useEffect(() => {
-    if (!socket || !meeting) return
+    if (!socket || !meeting?.id) return
 
     // Prevent double-joining in React Strict Mode
     if (!hasJoined.current) {
@@ -70,11 +70,11 @@ export function useFacilitatorSocket(meeting) {
       socket.off('answers-revealed')
       socket.off('error')
     }
-  }, [socket, meeting])
+  }, [socket, meeting?.id])
 
   const startQuestion = useCallback(
     (questionId, timeLimitSeconds) => {
-      if (!socket) return
+      if (!socket || !meeting?.id) return
 
       socket.emit('start-question', {
         meetingId: meeting.id,
@@ -91,24 +91,24 @@ export function useFacilitatorSocket(meeting) {
         setTimerEnd(Date.now() + timeLimitSeconds * 1000)
       }
     },
-    [socket, meeting]
+    [socket, meeting?.id]
   )
 
   const revealAnswers = useCallback(
     (questionId) => {
-      if (!socket) return
+      if (!socket || !meeting?.id) return
 
       socket.emit('reveal-answers', {
         meetingId: meeting.id,
         questionId
       })
     },
-    [socket, meeting]
+    [socket, meeting?.id]
   )
 
   const nextQuestion = useCallback(
     (nextQuestionIndex) => {
-      if (!socket) return
+      if (!socket || !meeting?.id) return
 
       socket.emit('next-question', {
         meetingId: meeting.id,
@@ -121,13 +121,13 @@ export function useFacilitatorSocket(meeting) {
       setSummary('')
       setTimerEnd(null)
     },
-    [socket, meeting]
+    [socket, meeting?.id]
   )
 
   const endMeeting = useCallback(() => {
-    if (!socket) return
+    if (!socket || !meeting?.id) return
     socket.emit('end-meeting', { meetingId: meeting.id })
-  }, [socket, meeting])
+  }, [socket, meeting?.id])
 
   return {
     sessionStatus,

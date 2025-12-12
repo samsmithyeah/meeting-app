@@ -8,7 +8,8 @@ import {
   markAnswered,
   clearAnswered,
   setTimer,
-  clearTimer
+  clearTimer,
+  clearSession
 } from '../config/redis.js'
 import { summarizeAnswers } from '../services/ai.js'
 
@@ -217,11 +218,18 @@ export function setupSocketHandlers(io) {
           .order('created_at')
 
         // Generate AI summary
-        const answerTexts = answers.map((a) => a.text)
-        const summary = await summarizeAnswers(question.text, answerTexts)
+        let summary = null
+        try {
+          const answerTexts = answers.map((a) => a.text)
+          summary = await summarizeAnswers(question.text, answerTexts)
+        } catch (e) {
+          console.error(`AI summarization failed for question ${questionId}:`, e.message)
+        }
 
-        // Store summary
-        await supabase.from('questions').update({ ai_summary: summary }).eq('id', questionId)
+        // Store summary only if it was successfully generated
+        if (summary) {
+          await supabase.from('questions').update({ ai_summary: summary }).eq('id', questionId)
+        }
 
         // Format answers based on anonymity setting
         const formattedAnswers = answers.map((a) => ({
@@ -282,6 +290,8 @@ export function setupSocketHandlers(io) {
         }
 
         await supabase.from('meetings').update({ status: 'completed' }).eq('id', meetingId)
+
+        await clearSession(meetingId)
 
         io.to(`meeting:${meetingId}`).emit('meeting-ended')
 

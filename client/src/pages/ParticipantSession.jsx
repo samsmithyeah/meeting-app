@@ -1,6 +1,6 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { useSocket } from '../context/SocketContext'
+import { useParticipantSocket } from '../hooks/useParticipantSocket'
 import QuestionCard from '../components/QuestionCard'
 import AnswerInput from '../components/AnswerInput'
 import AnswerReveal from '../components/AnswerReveal'
@@ -8,22 +8,25 @@ import AnswerReveal from '../components/AnswerReveal'
 export default function ParticipantSession() {
   const { code } = useParams()
   const navigate = useNavigate()
-  const { socket, connect, isConnected } = useSocket()
 
   const [meeting, setMeeting] = useState(null)
   const [loading, setLoading] = useState(true)
-  const [error, setError] = useState('')
+  const [fetchError, setFetchError] = useState('')
   const [participantName, setParticipantName] = useState('')
-  const [_participantId, setParticipantId] = useState(null)
-  const [currentQuestion, setCurrentQuestion] = useState(null)
-  const [sessionStatus, setSessionStatus] = useState('waiting')
-  const [hasAnswered, setHasAnswered] = useState(false)
-  const [revealedAnswers, setRevealedAnswers] = useState(null)
-  const [summary, setSummary] = useState('')
-  const [timerEnd, setTimerEnd] = useState(null)
-  const [answeredCount, setAnsweredCount] = useState(0)
-  const [totalCount, setTotalCount] = useState(0)
-  const hasJoined = useRef(false)
+
+  const {
+    sessionStatus,
+    currentQuestion,
+    hasAnswered,
+    revealedAnswers,
+    summary,
+    timerEnd,
+    answeredCount,
+    totalCount,
+    error: socketError,
+    meetingStatus,
+    submitAnswer
+  } = useParticipantSocket(meeting, participantName)
 
   // Get participant name from session storage
   useEffect(() => {
@@ -53,7 +56,7 @@ export default function ParticipantSession() {
         setMeeting(data)
         setLoading(false)
       } catch (err) {
-        setError(err.message)
+        setFetchError(err.message)
         setLoading(false)
       }
     }
@@ -63,115 +66,8 @@ export default function ParticipantSession() {
     }
   }, [code, navigate, participantName])
 
-  // Connect to socket when meeting is loaded
-  useEffect(() => {
-    if (meeting && participantName && !isConnected) {
-      connect()
-    }
-  }, [meeting, participantName, connect, isConnected])
-
-  // Socket event handlers
-  useEffect(() => {
-    if (!socket || !meeting || !participantName) return
-
-    // Prevent double-joining in React Strict Mode
-    if (!hasJoined.current) {
-      hasJoined.current = true
-      socket.emit('join-meeting', {
-        meetingId: meeting.id,
-        participantName
-      })
-    }
-
-    socket.on('joined', ({ participantId: id }) => {
-      setParticipantId(id)
-    })
-
-    socket.on('session-state', (state) => {
-      if (state) {
-        setSessionStatus(state.status)
-        setTotalCount(state.participants?.length || 0)
-        setAnsweredCount(state.answeredParticipants?.length || 0)
-        if (state.timerEnd) setTimerEnd(state.timerEnd)
-      }
-    })
-
-    socket.on('meeting-started', () => {
-      setMeeting((prev) => ({ ...prev, status: 'active' }))
-    })
-
-    socket.on(
-      'question-started',
-      ({ questionId, question, allowMultipleAnswers, timerEnd: end }) => {
-        setCurrentQuestion({
-          id: questionId,
-          text: question,
-          allow_multiple_answers: allowMultipleAnswers
-        })
-        setSessionStatus('answering')
-        setHasAnswered(false)
-        setRevealedAnswers(null)
-        setSummary('')
-        setTimerEnd(end)
-      }
-    )
-
-    socket.on('answer-received', () => {
-      setHasAnswered(true)
-    })
-
-    socket.on('answer-submitted', ({ answeredCount: ac, totalCount: tc }) => {
-      setAnsweredCount(ac)
-      setTotalCount(tc)
-    })
-
-    socket.on('answers-revealed', ({ answers, summary: s }) => {
-      setRevealedAnswers(answers)
-      setSummary(s)
-      setSessionStatus('revealed')
-      setTimerEnd(null)
-    })
-
-    socket.on('next-question', () => {
-      setSessionStatus('waiting')
-      setCurrentQuestion(null)
-      setHasAnswered(false)
-      setRevealedAnswers(null)
-      setSummary('')
-      setTimerEnd(null)
-    })
-
-    socket.on('meeting-ended', () => {
-      navigate('/')
-    })
-
-    socket.on('error', ({ message }) => {
-      setError(message)
-    })
-
-    return () => {
-      socket.off('joined')
-      socket.off('session-state')
-      socket.off('meeting-started')
-      socket.off('question-started')
-      socket.off('answer-received')
-      socket.off('answer-submitted')
-      socket.off('answers-revealed')
-      socket.off('next-question')
-      socket.off('meeting-ended')
-      socket.off('error')
-    }
-  }, [socket, meeting, participantName, navigate])
-
-  const submitAnswer = (answers) => {
-    if (!socket || !currentQuestion) return
-
-    socket.emit('submit-answer', {
-      meetingId: meeting.id,
-      questionId: currentQuestion.id,
-      answers
-    })
-  }
+  const error = fetchError || socketError
+  const currentMeetingStatus = meetingStatus || meeting?.status
 
   if (loading) {
     return (
@@ -201,7 +97,7 @@ export default function ParticipantSession() {
 
       <main className="max-w-lg mx-auto px-4 py-6">
         {/* Waiting for meeting to start */}
-        {meeting.status === 'draft' && (
+        {currentMeetingStatus === 'draft' && (
           <div className="bg-white rounded-xl shadow p-8 text-center">
             <div className="animate-pulse mb-4">
               <div className="w-16 h-16 bg-indigo-100 rounded-full mx-auto flex items-center justify-center">
@@ -226,7 +122,7 @@ export default function ParticipantSession() {
         )}
 
         {/* Meeting active - waiting for question */}
-        {meeting.status === 'active' && sessionStatus === 'waiting' && !currentQuestion && (
+        {currentMeetingStatus === 'active' && sessionStatus === 'waiting' && !currentQuestion && (
           <div className="bg-white rounded-xl shadow p-8 text-center">
             <div className="animate-pulse mb-4">
               <div className="w-16 h-16 bg-green-100 rounded-full mx-auto flex items-center justify-center">

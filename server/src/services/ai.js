@@ -6,11 +6,11 @@ const openai = process.env.OPENAI_API_KEY
 
 export async function summarizeAnswers(question, answers) {
   if (!openai) {
-    return 'AI summarization not available - OpenAI API key not configured'
+    throw new Error('AI summarization not available - OpenAI API key not configured')
   }
 
   if (!answers || answers.length === 0) {
-    return 'No answers to summarize'
+    return null
   }
 
   const answersText = answers.map((a, i) => `${i + 1}. ${a}`).join('\n')
@@ -36,6 +36,6 @@ export async function summarizeAnswers(question, answers) {
     return response.choices[0].message.content
   } catch (error) {
     console.error('OpenAI API error:', error)
-    return 'Unable to generate summary at this time'
+    throw new Error('Unable to generate summary at this time')
   }
 }
