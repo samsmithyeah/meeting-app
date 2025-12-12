@@ -1,0 +1,17 @@
+{
+  "workspaces": {
+    ".": {
+      "entry": [],
+      "project": ["*.js"]
+    },
+    "client": {
+      "entry": ["src/main.jsx"],
+      "project": ["src/**/*.{js,jsx}"]
+    },
+    "server": {
+      "entry": ["src/index.js"],
+      "project": ["src/**/*.js"]
+    }
+  },
+  "ignore": ["**/node_modules/**"]
+}

@@ -1,0 +1,29 @@
+{
+  "name": "meeting-facilitator",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Real-time meeting facilitation app for gathering and revealing team responses",
+  "scripts": {
+    "dev": "concurrently \"npm run dev:server\" \"npm run dev:client\"",
+    "dev:server": "cd server && npm run dev",
+    "dev:client": "cd client && npm run dev",
+    "install:all": "npm install && cd server && npm install && cd ../client && npm install",
+    "lint": "eslint client/src server/src",
+    "lint:fix": "eslint client/src server/src --fix",
+    "format": "prettier --write \"client/src/**/*.{js,jsx}\" \"server/src/**/*.js\"",
+    "format:check": "prettier --check \"client/src/**/*.{js,jsx}\" \"server/src/**/*.js\"",
+    "knip": "knip",
+    "check:all": "npm run lint && npm run format:check && npm run knip",
+    "fix:all": "npm run lint:fix && npm run format && npm run knip --fix"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.1",
+    "concurrently": "^8.2.2",
+    "eslint": "^9.39.1",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-react": "^7.37.5",
+    "eslint-plugin-react-hooks": "^7.0.1",
+    "knip": "^5.73.3",
+    "prettier": "^3.7.4"
+  }
+}
