@@ -4,6 +4,28 @@ import { summarizeAnswers } from '../services/ai.js'
 
 const router = Router()
 
+// Helper to verify facilitator authorization for a question
+async function verifyQuestionFacilitator(
+  questionId: string,
+  facilitatorCode: string
+): Promise<boolean> {
+  const { data } = await supabase
+    .from('questions')
+    .select('meeting_id')
+    .eq('id', questionId)
+    .single()
+
+  if (!data?.meeting_id) return false
+
+  const { data: meeting } = await supabase
+    .from('meetings')
+    .select('facilitator_code')
+    .eq('id', data.meeting_id)
+    .single()
+
+  return meeting?.facilitator_code === facilitatorCode
+}
+
 // Get question by ID with answers
 router.get('/:id', async (req: Request<{ id: string }>, res: Response) => {
   try {
@@ -57,6 +79,7 @@ router.get('/:id/answers', async (req: Request<{ id: string }>, res: Response) =
 })
 
 interface UpdateQuestionBody {
+  facilitatorCode?: string
   text?: string
   allowMultipleAnswers?: boolean
   timeLimitSeconds?: number | null
@@ -69,7 +92,12 @@ router.put(
   async (req: Request<{ id: string }, object, UpdateQuestionBody>, res: Response) => {
     try {
       const { id } = req.params
-      const { text, allowMultipleAnswers, timeLimitSeconds, status } = req.body
+      const { facilitatorCode, text, allowMultipleAnswers, timeLimitSeconds, status } = req.body
+
+      // Verify facilitator authorization
+      if (!facilitatorCode || !(await verifyQuestionFacilitator(id, facilitatorCode))) {
+        return res.status(403).json({ error: 'Unauthorized: Invalid facilitator code' })
+      }
 
       const updates: Record<string, unknown> = {}
       if (text !== undefined) updates.text = text
@@ -100,6 +128,12 @@ router.put(
 router.delete('/:id', async (req: Request<{ id: string }>, res: Response) => {
   try {
     const { id } = req.params
+    const { facilitatorCode } = req.body as { facilitatorCode?: string }
+
+    // Verify facilitator authorization
+    if (!facilitatorCode || !(await verifyQuestionFacilitator(id, facilitatorCode))) {
+      return res.status(403).json({ error: 'Unauthorized: Invalid facilitator code' })
+    }
 
     const { error } = await supabase.from('questions').delete().eq('id', id)
 
@@ -118,6 +152,12 @@ router.delete('/:id', async (req: Request<{ id: string }>, res: Response) => {
 router.post('/:id/summarize', async (req: Request<{ id: string }>, res: Response) => {
   try {
     const { id } = req.params
+    const { facilitatorCode } = req.body as { facilitatorCode?: string }
+
+    // Verify facilitator authorization
+    if (!facilitatorCode || !(await verifyQuestionFacilitator(id, facilitatorCode))) {
+      return res.status(403).json({ error: 'Unauthorized: Invalid facilitator code' })
+    }
 
     // Get question
     const { data: question, error: questionError } = await supabase

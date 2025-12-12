@@ -231,7 +231,12 @@ export function setupSocketHandlers(io: TypedServer): void {
           const answerTexts = (answers || []).map((a: { text: string }) => a.text)
           summary = await summarizeAnswers(question?.text || '', answerTexts)
         } catch (e) {
-          console.error(`AI summarization failed for question ${questionId}:`, (e as Error).message)
+          const errorMessage = (e as Error).message
+          console.error(`AI summarization failed for question ${questionId}:`, errorMessage)
+          // Notify the facilitator about the failure
+          io.to(`facilitator:${meetingId}`).emit('error', {
+            message: `AI summary could not be generated: ${errorMessage}`
+          })
         }
 
         // Store summary only if it was successfully generated
