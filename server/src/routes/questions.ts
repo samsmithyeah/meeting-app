@@ -1,11 +1,11 @@
-import { Router } from 'express'
+import { Router, Request, Response } from 'express'
 import { supabase } from '../config/supabase.js'
 import { summarizeAnswers } from '../services/ai.js'
 
 const router = Router()
 
 // Get question by ID with answers
-router.get('/:id', async (req, res) => {
+router.get('/:id', async (req: Request<{ id: string }>, res: Response) => {
   try {
     const { id } = req.params
 
@@ -27,7 +27,7 @@ router.get('/:id', async (req, res) => {
 })
 
 // Get answers for a question
-router.get('/:id/answers', async (req, res) => {
+router.get('/:id/answers', async (req: Request<{ id: string }>, res: Response) => {
   try {
     const { id } = req.params
 
@@ -56,38 +56,48 @@ router.get('/:id/answers', async (req, res) => {
   }
 })
 
+interface UpdateQuestionBody {
+  text?: string
+  allowMultipleAnswers?: boolean
+  timeLimitSeconds?: number | null
+  status?: string
+}
+
 // Update question
-router.put('/:id', async (req, res) => {
-  try {
-    const { id } = req.params
-    const { text, allowMultipleAnswers, timeLimitSeconds, status } = req.body
+router.put(
+  '/:id',
+  async (req: Request<{ id: string }, object, UpdateQuestionBody>, res: Response) => {
+    try {
+      const { id } = req.params
+      const { text, allowMultipleAnswers, timeLimitSeconds, status } = req.body
 
-    const updates = {}
-    if (text !== undefined) updates.text = text
-    if (allowMultipleAnswers !== undefined) updates.allow_multiple_answers = allowMultipleAnswers
-    if (timeLimitSeconds !== undefined) updates.time_limit_seconds = timeLimitSeconds
-    if (status !== undefined) updates.status = status
+      const updates: Record<string, unknown> = {}
+      if (text !== undefined) updates.text = text
+      if (allowMultipleAnswers !== undefined) updates.allow_multiple_answers = allowMultipleAnswers
+      if (timeLimitSeconds !== undefined) updates.time_limit_seconds = timeLimitSeconds
+      if (status !== undefined) updates.status = status
 
-    const { data: question, error } = await supabase
-      .from('questions')
-      .update(updates)
-      .eq('id', id)
-      .select()
-      .single()
+      const { data: question, error } = await supabase
+        .from('questions')
+        .update(updates)
+        .eq('id', id)
+        .select()
+        .single()
 
-    if (error) {
-      return res.status(500).json({ error: 'Failed to update question' })
+      if (error) {
+        return res.status(500).json({ error: 'Failed to update question' })
+      }
+
+      res.json(question)
+    } catch (error) {
+      console.error('Update question error:', error)
+      res.status(500).json({ error: 'Internal server error' })
     }
-
-    res.json(question)
-  } catch (error) {
-    console.error('Update question error:', error)
-    res.status(500).json({ error: 'Internal server error' })
   }
-})
+)
 
 // Delete question
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', async (req: Request<{ id: string }>, res: Response) => {
   try {
     const { id } = req.params
 
@@ -105,7 +115,7 @@ router.delete('/:id', async (req, res) => {
 })
 
 // Generate AI summary for question
-router.post('/:id/summarize', async (req, res) => {
+router.post('/:id/summarize', async (req: Request<{ id: string }>, res: Response) => {
   try {
     const { id } = req.params
 
@@ -130,7 +140,7 @@ router.post('/:id/summarize', async (req, res) => {
       return res.status(500).json({ error: 'Failed to fetch answers' })
     }
 
-    const answerTexts = answers.map((a) => a.text)
+    const answerTexts = (answers || []).map((a: { text: string }) => a.text)
     const summary = await summarizeAnswers(question.text, answerTexts)
 
     // Store summary

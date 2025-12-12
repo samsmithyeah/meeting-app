@@ -1,16 +1,17 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { useSocket } from '../context/SocketContext'
+import type { Meeting, Answer, FacilitatorSocketReturn, SessionState } from '../types'
 
-export function useFacilitatorSocket(meeting) {
+export function useFacilitatorSocket(meeting: Meeting | null): FacilitatorSocketReturn {
   const { socket, connect, isConnected } = useSocket()
   const hasJoined = useRef(false)
 
-  const [sessionStatus, setSessionStatus] = useState('waiting')
+  const [sessionStatus, setSessionStatus] = useState<SessionState['status']>('waiting')
   const [participantCount, setParticipantCount] = useState(0)
   const [answeredCount, setAnsweredCount] = useState(0)
-  const [revealedAnswers, setRevealedAnswers] = useState(null)
+  const [revealedAnswers, setRevealedAnswers] = useState<Answer[] | null>(null)
   const [summary, setSummary] = useState('')
-  const [timerEnd, setTimerEnd] = useState(null)
+  const [timerEnd, setTimerEnd] = useState<number | null>(null)
   const [error, setError] = useState('')
 
   // Connect to socket when meeting is loaded
@@ -54,7 +55,7 @@ export function useFacilitatorSocket(meeting) {
 
     socket.on('answers-revealed', ({ answers, summary: s }) => {
       setRevealedAnswers(answers)
-      setSummary(s)
+      setSummary(s || '')
       setSessionStatus('revealed')
     })
 
@@ -73,7 +74,7 @@ export function useFacilitatorSocket(meeting) {
   }, [socket, meeting?.id])
 
   const startQuestion = useCallback(
-    (questionId, timeLimitSeconds) => {
+    (questionId: string, timeLimitSeconds?: number | null) => {
       if (!socket || !meeting?.id) return
 
       socket.emit('start-question', {
@@ -95,7 +96,7 @@ export function useFacilitatorSocket(meeting) {
   )
 
   const revealAnswers = useCallback(
-    (questionId) => {
+    (questionId: string) => {
       if (!socket || !meeting?.id) return
 
       socket.emit('reveal-answers', {
@@ -107,7 +108,7 @@ export function useFacilitatorSocket(meeting) {
   )
 
   const nextQuestion = useCallback(
-    (nextQuestionIndex) => {
+    (nextQuestionIndex: number) => {
       if (!socket || !meeting?.id) return
 
       socket.emit('next-question', {

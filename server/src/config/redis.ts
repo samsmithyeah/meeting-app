@@ -1,26 +1,28 @@
-import Redis from 'ioredis'
+import { Redis } from 'ioredis'
+import type { SessionState } from '../types/index.js'
 
-let _redis = null
+let _redis: Redis | null = null
 
-function getRedis() {
+function getRedis(): Redis | null {
   if (!_redis) {
     const redisUrl = process.env.REDIS_URL || 'redis://localhost:6379'
     try {
-      _redis = new Redis(redisUrl, {
+      const redis = new Redis(redisUrl, {
         maxRetriesPerRequest: 3,
-        retryDelayOnFailover: 100,
         lazyConnect: true
       })
 
-      _redis.on('error', (err) => {
+      redis.on('error', (err: Error) => {
         console.warn('Redis connection error:', err.message)
       })
 
-      _redis.on('connect', () => {
+      redis.on('connect', () => {
         console.log('Redis connected')
       })
+
+      _redis = redis
     } catch (err) {
-      console.warn('Redis initialization failed:', err.message)
+      console.warn('Redis initialization failed:', (err as Error).message)
     }
   }
   return _redis
@@ -28,14 +30,15 @@ function getRedis() {
 
 // Session state helpers
 const sessionKeys = {
-  status: (meetingId) => `session:${meetingId}:status`,
-  currentQuestion: (meetingId) => `session:${meetingId}:currentQuestion`,
-  participants: (meetingId) => `session:${meetingId}:participants`,
-  answered: (meetingId, questionId) => `session:${meetingId}:answered:${questionId}`,
-  timerEnd: (meetingId) => `session:${meetingId}:timerEnd`
+  status: (meetingId: string) => `session:${meetingId}:status`,
+  currentQuestion: (meetingId: string) => `session:${meetingId}:currentQuestion`,
+  participants: (meetingId: string) => `session:${meetingId}:participants`,
+  answered: (meetingId: string, questionId: string) =>
+    `session:${meetingId}:answered:${questionId}`,
+  timerEnd: (meetingId: string) => `session:${meetingId}:timerEnd`
 }
 
-export async function getSessionState(meetingId) {
+export async function getSessionState(meetingId: string): Promise<SessionState> {
   const redis = getRedis()
   if (!redis) {
     console.error('Redis client is not available for getSessionState')
@@ -50,13 +53,13 @@ export async function getSessionState(meetingId) {
 
   const participants = await redis.smembers(sessionKeys.participants(meetingId))
 
-  let answered = []
+  let answered: string[] = []
   if (currentQuestion) {
     answered = await redis.smembers(sessionKeys.answered(meetingId, currentQuestion))
   }
 
   return {
-    status: status || 'waiting',
+    status: (status as SessionState['status']) || 'waiting',
     currentQuestionId: currentQuestion,
     participants,
     answeredParticipants: answered,
@@ -64,7 +67,10 @@ export async function getSessionState(meetingId) {
   }
 }
 
-export async function setSessionStatus(meetingId, status) {
+export async function setSessionStatus(
+  meetingId: string,
+  status: SessionState['status']
+): Promise<void> {
   const redis = getRedis()
   if (!redis) {
     console.error('Redis client is not available for setSessionStatus')
@@ -73,7 +79,7 @@ export async function setSessionStatus(meetingId, status) {
   await redis.set(sessionKeys.status(meetingId), status)
 }
 
-export async function setCurrentQuestion(meetingId, questionId) {
+export async function setCurrentQuestion(meetingId: string, questionId: string): Promise<void> {
   const redis = getRedis()
   if (!redis) {
     console.error('Redis client is not available for setCurrentQuestion')
@@ -82,7 +88,7 @@ export async function setCurrentQuestion(meetingId, questionId) {
   await redis.set(sessionKeys.currentQuestion(meetingId), questionId)
 }
 
-export async function addParticipant(meetingId, participantId) {
+export async function addParticipant(meetingId: string, participantId: string): Promise<void> {
   const redis = getRedis()
   if (!redis) {
     console.error('Redis client is not available for addParticipant')
@@ -91,7 +97,7 @@ export async function addParticipant(meetingId, participantId) {
   await redis.sadd(sessionKeys.participants(meetingId), participantId)
 }
 
-export async function removeParticipant(meetingId, participantId) {
+export async function removeParticipant(meetingId: string, participantId: string): Promise<void> {
   const redis = getRedis()
   if (!redis) {
     console.error('Redis client is not available for removeParticipant')
@@ -100,7 +106,11 @@ export async function removeParticipant(meetingId, participantId) {
   await redis.srem(sessionKeys.participants(meetingId), participantId)
 }
 
-export async function markAnswered(meetingId, questionId, participantId) {
+export async function markAnswered(
+  meetingId: string,
+  questionId: string,
+  participantId: string
+): Promise<void> {
   const redis = getRedis()
   if (!redis) {
     console.error('Redis client is not available for markAnswered')
@@ -109,7 +119,7 @@ export async function markAnswered(meetingId, questionId, participantId) {
   await redis.sadd(sessionKeys.answered(meetingId, questionId), participantId)
 }
 
-export async function clearAnswered(meetingId, questionId) {
+export async function clearAnswered(meetingId: string, questionId: string): Promise<void> {
   const redis = getRedis()
   if (!redis) {
     console.error('Redis client is not available for clearAnswered')
@@ -118,7 +128,7 @@ export async function clearAnswered(meetingId, questionId) {
   await redis.del(sessionKeys.answered(meetingId, questionId))
 }
 
-export async function setTimer(meetingId, endTime) {
+export async function setTimer(meetingId: string, endTime: number): Promise<void> {
   const redis = getRedis()
   if (!redis) {
     console.error('Redis client is not available for setTimer')
@@ -127,7 +137,7 @@ export async function setTimer(meetingId, endTime) {
   await redis.set(sessionKeys.timerEnd(meetingId), endTime.toString())
 }
 
-export async function clearTimer(meetingId) {
+export async function clearTimer(meetingId: string): Promise<void> {
   const redis = getRedis()
   if (!redis) {
     console.error('Redis client is not available for clearTimer')
@@ -136,7 +146,7 @@ export async function clearTimer(meetingId) {
   await redis.del(sessionKeys.timerEnd(meetingId))
 }
 
-export async function clearSession(meetingId) {
+export async function clearSession(meetingId: string): Promise<void> {
   const redis = getRedis()
   if (!redis) {
     console.error('Redis client is not available for clearSession')
@@ -144,7 +154,7 @@ export async function clearSession(meetingId) {
   }
 
   const stream = redis.scanStream({ match: `session:${meetingId}:*` })
-  const keysToDelete = []
+  const keysToDelete: string[] = []
   for await (const keys of stream) {
     if (keys.length) {
       keysToDelete.push(...keys)

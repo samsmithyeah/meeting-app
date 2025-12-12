@@ -1,5 +1,12 @@
-import { useState } from 'react'
+import { useState, type FormEvent, type ChangeEvent } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
+
+interface QuestionForm {
+  id: string
+  text: string
+  allowMultipleAnswers: boolean
+  timeLimitSeconds: number | null
+}
 
 let questionId = 0
 const generateQuestionId = () => `question-${++questionId}`
@@ -8,7 +15,7 @@ export default function CreateMeeting() {
   const navigate = useNavigate()
   const [title, setTitle] = useState('')
   const [showParticipantNames, setShowParticipantNames] = useState(true)
-  const [questions, setQuestions] = useState([
+  const [questions, setQuestions] = useState<QuestionForm[]>([
     { id: generateQuestionId(), text: '', allowMultipleAnswers: false, timeLimitSeconds: null }
   ])
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -21,17 +28,21 @@ export default function CreateMeeting() {
     ])
   }
 
-  const removeQuestion = (id) => {
+  const removeQuestion = (id: string) => {
     if (questions.length > 1) {
       setQuestions(questions.filter((q) => q.id !== id))
     }
   }
 
-  const updateQuestion = (id, field, value) => {
+  const updateQuestion = (
+    id: string,
+    field: keyof QuestionForm,
+    value: string | boolean | number | null
+  ) => {
     setQuestions(questions.map((q) => (q.id === id ? { ...q, [field]: value } : q)))
   }
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
     setError('')
 
@@ -70,7 +81,7 @@ export default function CreateMeeting() {
       const data = await response.json()
       navigate(`/facilitate/${data.facilitatorCode}`)
     } catch (err) {
-      setError(err.message || 'Failed to create meeting')
+      setError(err instanceof Error ? err.message : 'Failed to create meeting')
     } finally {
       setIsSubmitting(false)
     }
@@ -158,7 +169,7 @@ export default function CreateMeeting() {
                         <label className="mr-2">Time limit:</label>
                         <select
                           value={question.timeLimitSeconds || ''}
-                          onChange={(e) =>
+                          onChange={(e: ChangeEvent<HTMLSelectElement>) =>
                             updateQuestion(
                               question.id,
                               'timeLimitSeconds',

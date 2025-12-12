@@ -4,7 +4,10 @@ const openai = process.env.OPENAI_API_KEY
   ? new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
   : null
 
-export async function summarizeAnswers(question, answers) {
+export async function summarizeAnswers(
+  question: string,
+  answers: string[]
+): Promise<string | null> {
   if (!openai) {
     throw new Error('AI summarization not available - OpenAI API key not configured')
   }

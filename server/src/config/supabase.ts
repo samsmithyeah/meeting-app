@@ -1,8 +1,8 @@
-import { createClient } from '@supabase/supabase-js'
+import { createClient, SupabaseClient } from '@supabase/supabase-js'
 
-let _supabase = null
+let _supabase: SupabaseClient | null = null
 
-function getSupabase() {
+function getSupabase(): SupabaseClient {
   if (!_supabase) {
     const supabaseUrl = process.env.SUPABASE_URL
     const supabaseKey = process.env.SUPABASE_ANON_KEY
@@ -19,11 +19,8 @@ function getSupabase() {
   return _supabase
 }
 
-export const supabase = new Proxy(
-  {},
-  {
-    get(_, prop) {
-      return getSupabase()[prop]
-    }
+export const supabase = new Proxy({} as SupabaseClient, {
+  get(_, prop: keyof SupabaseClient) {
+    return getSupabase()[prop]
   }
-)
+})

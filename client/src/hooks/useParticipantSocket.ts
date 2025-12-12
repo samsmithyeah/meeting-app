@@ -1,22 +1,26 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useSocket } from '../context/SocketContext'
+import type { Meeting, Question, Answer, ParticipantSocketReturn, SessionState } from '../types'
 
-export function useParticipantSocket(meeting, participantName) {
+export function useParticipantSocket(
+  meeting: Meeting | null,
+  participantName: string
+): ParticipantSocketReturn {
   const navigate = useNavigate()
   const { socket, connect, isConnected } = useSocket()
   const hasJoined = useRef(false)
 
-  const [sessionStatus, setSessionStatus] = useState('waiting')
-  const [currentQuestion, setCurrentQuestion] = useState(null)
+  const [sessionStatus, setSessionStatus] = useState<SessionState['status']>('waiting')
+  const [currentQuestion, setCurrentQuestion] = useState<Question | null>(null)
   const [hasAnswered, setHasAnswered] = useState(false)
-  const [revealedAnswers, setRevealedAnswers] = useState(null)
+  const [revealedAnswers, setRevealedAnswers] = useState<Answer[] | null>(null)
   const [summary, setSummary] = useState('')
-  const [timerEnd, setTimerEnd] = useState(null)
+  const [timerEnd, setTimerEnd] = useState<number | null>(null)
   const [answeredCount, setAnsweredCount] = useState(0)
   const [totalCount, setTotalCount] = useState(0)
   const [error, setError] = useState('')
-  const [meetingStatus, setMeetingStatus] = useState(meeting?.status || 'draft')
+  const [meetingStatus, setMeetingStatus] = useState<Meeting['status']>(meeting?.status || 'draft')
 
   // Connect to socket when meeting is loaded
   useEffect(() => {
@@ -60,7 +64,7 @@ export function useParticipantSocket(meeting, participantName) {
       ({ questionId, question, allowMultipleAnswers, timerEnd: end }) => {
         setCurrentQuestion({
           id: questionId,
-          text: question,
+          text: question || '',
           allow_multiple_answers: allowMultipleAnswers
         })
         setSessionStatus('answering')
@@ -82,7 +86,7 @@ export function useParticipantSocket(meeting, participantName) {
 
     socket.on('answers-revealed', ({ answers, summary: s }) => {
       setRevealedAnswers(answers)
-      setSummary(s)
+      setSummary(s || '')
       setSessionStatus('revealed')
       setTimerEnd(null)
     })
@@ -119,7 +123,7 @@ export function useParticipantSocket(meeting, participantName) {
   }, [socket, meeting?.id, participantName, navigate])
 
   const submitAnswer = useCallback(
-    (answers) => {
+    (answers: string | string[]) => {
       if (!socket || !currentQuestion || !meeting?.id) return
 
       socket.emit('submit-answer', {

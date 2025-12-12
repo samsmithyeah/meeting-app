@@ -12,18 +12,19 @@ import {
   clearSession
 } from '../config/redis.js'
 import { summarizeAnswers } from '../services/ai.js'
+import type { TypedServer, TypedSocket } from '../types/index.js'
 
-export function setupSocketHandlers(io) {
-  io.on('connection', (socket) => {
+export function setupSocketHandlers(io: TypedServer): void {
+  io.on('connection', (socket: TypedSocket) => {
     console.log('Client connected:', socket.id)
 
     // Facilitator joins meeting
     socket.on('facilitator-join', async ({ meetingId }) => {
       try {
-        socket.join(`meeting:${meetingId}`)
-        socket.join(`facilitator:${meetingId}`)
-        socket.meetingId = meetingId
-        socket.isFacilitator = true
+        await socket.join(`meeting:${meetingId}`)
+        await socket.join(`facilitator:${meetingId}`)
+        socket.data.meetingId = meetingId
+        socket.data.isFacilitator = true
 
         const sessionState = await getSessionState(meetingId)
         socket.emit('session-state', sessionState)
@@ -55,10 +56,10 @@ export function setupSocketHandlers(io) {
           return
         }
 
-        socket.join(`meeting:${meetingId}`)
-        socket.meetingId = meetingId
-        socket.participantId = participant.id
-        socket.participantName = participantName
+        await socket.join(`meeting:${meetingId}`)
+        socket.data.meetingId = meetingId
+        socket.data.participantId = participant.id
+        socket.data.participantName = participantName
 
         // Add to Redis session
         await addParticipant(meetingId, participant.id)
@@ -85,7 +86,7 @@ export function setupSocketHandlers(io) {
     // Facilitator starts a question
     socket.on('start-question', async ({ meetingId, questionId, timeLimitSeconds }) => {
       try {
-        if (!socket.isFacilitator) {
+        if (!socket.data.isFacilitator) {
           socket.emit('error', { message: 'Not authorized' })
           return
         }
@@ -99,7 +100,7 @@ export function setupSocketHandlers(io) {
         await clearAnswered(meetingId, questionId)
 
         // Set timer if provided
-        let timerEnd = null
+        let timerEnd: number | null = null
         if (timeLimitSeconds) {
           timerEnd = Date.now() + timeLimitSeconds * 1000
           await setTimer(meetingId, timerEnd)
@@ -132,7 +133,7 @@ export function setupSocketHandlers(io) {
     // Participant submits answer
     socket.on('submit-answer', async ({ meetingId, questionId, answers }) => {
       try {
-        if (!socket.participantId) {
+        if (!socket.data.participantId) {
           socket.emit('error', { message: 'Not a participant' })
           return
         }
@@ -142,14 +143,14 @@ export function setupSocketHandlers(io) {
         // Save answers to database
         const answersToInsert = answersArray.map((text) => ({
           question_id: questionId,
-          participant_id: socket.participantId,
+          participant_id: socket.data.participantId,
           text
         }))
 
         await supabase.from('answers').insert(answersToInsert)
 
         // Mark as answered in Redis
-        await markAnswered(meetingId, questionId, socket.participantId)
+        await markAnswered(meetingId, questionId, socket.data.participantId)
 
         // Get updated session state
         const sessionState = await getSessionState(meetingId)
@@ -166,7 +167,7 @@ export function setupSocketHandlers(io) {
           allAnswered: answeredCount >= totalCount
         })
 
-        console.log(`Answer submitted by ${socket.participantName}`)
+        console.log(`Answer submitted by ${socket.data.participantName}`)
       } catch (error) {
         console.error('Submit answer error:', error)
         socket.emit('error', { message: 'Failed to submit answer' })
@@ -176,7 +177,7 @@ export function setupSocketHandlers(io) {
     // Facilitator reveals answers
     socket.on('reveal-answers', async ({ meetingId, questionId }) => {
       try {
-        if (!socket.isFacilitator) {
+        if (!socket.data.isFacilitator) {
           socket.emit('error', { message: 'Not authorized' })
           return
         }
@@ -218,12 +219,12 @@ export function setupSocketHandlers(io) {
           .order('created_at')
 
         // Generate AI summary
-        let summary = null
+        let summary: string | null = null
         try {
-          const answerTexts = answers.map((a) => a.text)
-          summary = await summarizeAnswers(question.text, answerTexts)
+          const answerTexts = (answers || []).map((a: { text: string }) => a.text)
+          summary = await summarizeAnswers(question?.text || '', answerTexts)
         } catch (e) {
-          console.error(`AI summarization failed for question ${questionId}:`, e.message)
+          console.error(`AI summarization failed for question ${questionId}:`, (e as Error).message)
         }
 
         // Store summary only if it was successfully generated
@@ -232,11 +233,26 @@ export function setupSocketHandlers(io) {
         }
 
         // Format answers based on anonymity setting
-        const formattedAnswers = answers.map((a) => ({
-          id: a.id,
-          text: a.text,
-          participantName: meeting.show_participant_names ? a.participants?.name : null
-        }))
+        const formattedAnswers = (answers || []).map(
+          (a: {
+            id: string
+            text: string
+            participants?: { name: string } | { name: string }[] | null
+          }) => {
+            const participantData = a.participants
+            const participantName =
+              participantData && !Array.isArray(participantData)
+                ? participantData.name
+                : Array.isArray(participantData) && participantData.length > 0
+                  ? participantData[0].name
+                  : null
+            return {
+              id: a.id,
+              text: a.text,
+              participantName: meeting?.show_participant_names ? participantName : null
+            }
+          }
+        )
 
         // Broadcast reveal
         io.to(`meeting:${meetingId}`).emit('answers-revealed', {
@@ -255,7 +271,7 @@ export function setupSocketHandlers(io) {
     // Facilitator moves to next question
     socket.on('next-question', async ({ meetingId, nextQuestionIndex }) => {
       try {
-        if (!socket.isFacilitator) {
+        if (!socket.data.isFacilitator) {
           socket.emit('error', { message: 'Not authorized' })
           return
         }
@@ -284,7 +300,7 @@ export function setupSocketHandlers(io) {
     // End meeting
     socket.on('end-meeting', async ({ meetingId }) => {
       try {
-        if (!socket.isFacilitator) {
+        if (!socket.data.isFacilitator) {
           socket.emit('error', { message: 'Not authorized' })
           return
         }
@@ -304,21 +320,21 @@ export function setupSocketHandlers(io) {
     // Handle disconnection
     socket.on('disconnect', async () => {
       try {
-        if (socket.participantId && socket.meetingId) {
+        if (socket.data.participantId && socket.data.meetingId) {
           // Mark participant as inactive
           await supabase
             .from('participants')
             .update({ is_active: false, socket_id: null })
-            .eq('id', socket.participantId)
+            .eq('id', socket.data.participantId)
 
           // Remove from Redis
-          await removeParticipant(socket.meetingId, socket.participantId)
+          await removeParticipant(socket.data.meetingId, socket.data.participantId)
 
           // Notify others
-          const sessionState = await getSessionState(socket.meetingId)
-          io.to(`meeting:${socket.meetingId}`).emit('participant-left', {
-            participantId: socket.participantId,
-            name: socket.participantName,
+          const sessionState = await getSessionState(socket.data.meetingId)
+          io.to(`meeting:${socket.data.meetingId}`).emit('participant-left', {
+            participantId: socket.data.participantId,
+            name: socket.data.participantName || '',
             count: sessionState?.participants?.length || 0
           })
         }

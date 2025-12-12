@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import type { QuestionCardProps } from '../types'
 
 export default function QuestionCard({
   question,
@@ -7,8 +8,8 @@ export default function QuestionCard({
   totalCount = 0,
   timerEnd,
   isFacilitator
-}) {
-  const [timeLeft, setTimeLeft] = useState(null)
+}: QuestionCardProps) {
+  const [timeLeft, setTimeLeft] = useState<number | null>(null)
 
   useEffect(() => {
     if (!timerEnd) {
@@ -27,7 +28,7 @@ export default function QuestionCard({
     return () => clearInterval(interval)
   }, [timerEnd])
 
-  const formatTime = (seconds) => {
+  const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60)
     const secs = seconds % 60
     return `${mins}:${secs.toString().padStart(2, '0')}`

@@ -4,12 +4,13 @@ import { useParticipantSocket } from '../hooks/useParticipantSocket'
 import QuestionCard from '../components/QuestionCard'
 import AnswerInput from '../components/AnswerInput'
 import AnswerReveal from '../components/AnswerReveal'
+import type { Meeting } from '../types'
 
 export default function ParticipantSession() {
-  const { code } = useParams()
+  const { code } = useParams<{ code: string }>()
   const navigate = useNavigate()
 
-  const [meeting, setMeeting] = useState(null)
+  const [meeting, setMeeting] = useState<Meeting | null>(null)
   const [loading, setLoading] = useState(true)
   const [fetchError, setFetchError] = useState('')
   const [participantName, setParticipantName] = useState('')
@@ -46,7 +47,7 @@ export default function ParticipantSession() {
         if (!response.ok) {
           throw new Error('Meeting not found')
         }
-        const data = await response.json()
+        const data: Meeting = await response.json()
 
         if (data.isFacilitator) {
           navigate(`/facilitate/${code}`)
@@ -56,7 +57,7 @@ export default function ParticipantSession() {
         setMeeting(data)
         setLoading(false)
       } catch (err) {
-        setFetchError(err.message)
+        setFetchError(err instanceof Error ? err.message : 'Failed to load meeting')
         setLoading(false)
       }
     }
@@ -81,6 +82,14 @@ export default function ParticipantSession() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-red-500">{error}</div>
+      </div>
+    )
+  }
+
+  if (!meeting) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-gray-500">Meeting not found</div>
       </div>
     )
   }
@@ -158,7 +167,7 @@ export default function ParticipantSession() {
 
             {!hasAnswered ? (
               <AnswerInput
-                allowMultiple={currentQuestion.allow_multiple_answers}
+                allowMultiple={currentQuestion.allow_multiple_answers ?? false}
                 onSubmit={submitAnswer}
                 timerEnd={timerEnd}
               />
@@ -201,7 +210,7 @@ export default function ParticipantSession() {
             <AnswerReveal
               answers={revealedAnswers}
               summary={summary}
-              showNames={meeting.showParticipantNames}
+              showNames={meeting.showParticipantNames ?? true}
             />
             <div className="bg-blue-50 rounded-xl p-4 text-center">
               <p className="text-blue-800">Waiting for facilitator to continue...</p>

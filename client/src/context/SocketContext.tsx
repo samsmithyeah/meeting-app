@@ -1,14 +1,19 @@
-import { createContext, useContext, useEffect, useState } from 'react'
+import { createContext, useContext, useEffect, useState, type ReactNode } from 'react'
 import { io } from 'socket.io-client'
+import type { TypedSocket, SocketContextValue } from '../types'
 
-const SocketContext = createContext(null)
+const SocketContext = createContext<SocketContextValue | null>(null)
 
-export function SocketProvider({ children }) {
-  const [socket, setSocket] = useState(null)
+interface SocketProviderProps {
+  children: ReactNode
+}
+
+export function SocketProvider({ children }: SocketProviderProps) {
+  const [socket, setSocket] = useState<TypedSocket | null>(null)
   const [isConnected, setIsConnected] = useState(false)
 
   useEffect(() => {
-    const socketInstance = io(import.meta.env.VITE_API_URL, {
+    const socketInstance: TypedSocket = io(import.meta.env.VITE_API_URL, {
       autoConnect: false
     })
 
@@ -46,7 +51,7 @@ export function SocketProvider({ children }) {
   )
 }
 
-export function useSocket() {
+export function useSocket(): SocketContextValue {
   const context = useContext(SocketContext)
   if (!context) {
     throw new Error('useSocket must be used within a SocketProvider')

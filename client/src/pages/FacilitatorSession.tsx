@@ -3,12 +3,13 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { useFacilitatorSocket } from '../hooks/useFacilitatorSocket'
 import QuestionCard from '../components/QuestionCard'
 import AnswerReveal from '../components/AnswerReveal'
+import type { Meeting } from '../types'
 
 export default function FacilitatorSession() {
-  const { code } = useParams()
+  const { code } = useParams<{ code: string }>()
   const navigate = useNavigate()
 
-  const [meeting, setMeeting] = useState(null)
+  const [meeting, setMeeting] = useState<Meeting | null>(null)
   const [loading, setLoading] = useState(true)
   const [fetchError, setFetchError] = useState('')
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0)
@@ -36,7 +37,7 @@ export default function FacilitatorSession() {
         if (!response.ok) {
           throw new Error('Meeting not found')
         }
-        const data = await response.json()
+        const data: Meeting = await response.json()
 
         if (!data.isFacilitator) {
           navigate(`/join/${code}`)
@@ -47,7 +48,7 @@ export default function FacilitatorSession() {
         setCurrentQuestionIndex(data.currentQuestionIndex || 0)
         setLoading(false)
       } catch (err) {
-        setFetchError(err.message)
+        setFetchError(err instanceof Error ? err.message : 'Failed to load meeting')
         setLoading(false)
       }
     }
@@ -58,9 +59,10 @@ export default function FacilitatorSession() {
   const currentQuestion = meeting?.questions?.[currentQuestionIndex]
 
   const startMeeting = async () => {
+    if (!meeting) return
     try {
       await fetch(`/api/meetings/${meeting.id}/start`, { method: 'POST' })
-      setMeeting((prev) => ({ ...prev, status: 'active' }))
+      setMeeting((prev) => (prev ? { ...prev, status: 'active' } : null))
     } catch {
       setFetchError('Failed to start meeting')
     }
@@ -77,7 +79,7 @@ export default function FacilitatorSession() {
   }
 
   const handleNextQuestion = () => {
-    if (currentQuestionIndex >= meeting.questions.length - 1) return
+    if (!meeting?.questions || currentQuestionIndex >= meeting.questions.length - 1) return
     const nextIndex = currentQuestionIndex + 1
     nextQuestion(nextIndex)
     setCurrentQuestionIndex(nextIndex)
@@ -89,6 +91,7 @@ export default function FacilitatorSession() {
   }
 
   const copyJoinLink = () => {
+    if (!meeting) return
     const link = `${window.location.origin}/join/${meeting.participantCode}`
     navigator.clipboard.writeText(link)
     setCopied(true)
@@ -113,7 +116,17 @@ export default function FacilitatorSession() {
     )
   }
 
-  const isLastQuestion = currentQuestionIndex >= meeting.questions.length - 1
+  if (!meeting) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-gray-500">Meeting not found</div>
+      </div>
+    )
+  }
+
+  const isLastQuestion = meeting.questions
+    ? currentQuestionIndex >= meeting.questions.length - 1
+    : true
 
   return (
     <div className="min-h-screen bg-gray-100">
@@ -171,10 +184,10 @@ export default function FacilitatorSession() {
             {/* Progress */}
             <div className="flex items-center justify-between text-sm text-gray-500">
               <span>
-                Question {currentQuestionIndex + 1} of {meeting.questions.length}
+                Question {currentQuestionIndex + 1} of {meeting.questions?.length || 0}
               </span>
               <div className="flex gap-1">
-                {meeting.questions.map((_, i) => (
+                {meeting.questions?.map((_, i) => (
                   <div
                     key={i}
                     className={`w-8 h-1 rounded ${
@@ -204,7 +217,7 @@ export default function FacilitatorSession() {
               <AnswerReveal
                 answers={revealedAnswers}
                 summary={summary}
-                showNames={meeting.showParticipantNames}
+                showNames={meeting.showParticipantNames ?? true}
               />
             )}
 

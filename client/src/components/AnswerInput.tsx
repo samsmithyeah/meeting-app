@@ -1,10 +1,20 @@
-import { useState } from 'react'
+import { useState, type FormEvent } from 'react'
+import type { AnswerInputProps } from '../types'
+
+interface AnswerForm {
+  id: string
+  text: string
+}
 
 let answerId = 0
 const generateAnswerId = () => `answer-${++answerId}`
 
-export default function AnswerInput({ allowMultiple, onSubmit, timerEnd: _timerEnd }) {
-  const [answers, setAnswers] = useState([{ id: generateAnswerId(), text: '' }])
+export default function AnswerInput({
+  allowMultiple,
+  onSubmit,
+  timerEnd: _timerEnd
+}: AnswerInputProps) {
+  const [answers, setAnswers] = useState<AnswerForm[]>([{ id: generateAnswerId(), text: '' }])
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const addAnswer = () => {
@@ -13,17 +23,17 @@ export default function AnswerInput({ allowMultiple, onSubmit, timerEnd: _timerE
     }
   }
 
-  const removeAnswer = (id) => {
+  const removeAnswer = (id: string) => {
     if (answers.length > 1) {
       setAnswers(answers.filter((a) => a.id !== id))
     }
   }
 
-  const updateAnswer = (id, value) => {
+  const updateAnswer = (id: string, value: string) => {
     setAnswers(answers.map((a) => (a.id === id ? { ...a, text: value } : a)))
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = (e: FormEvent) => {
     e.preventDefault()
 
     const validAnswers = answers.filter((a) => a.text.trim()).map((a) => a.text)

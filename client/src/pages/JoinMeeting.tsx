@@ -1,21 +1,22 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, type FormEvent, type ChangeEvent } from 'react'
 import { useNavigate, useParams, Link } from 'react-router-dom'
+import type { Meeting } from '../types'
 
 export default function JoinMeeting() {
   const navigate = useNavigate()
-  const { code: urlCode } = useParams()
+  const { code: urlCode } = useParams<{ code?: string }>()
   const [code, setCode] = useState(urlCode || '')
   const [name, setName] = useState('')
   const [isJoining, setIsJoining] = useState(false)
   const [error, setError] = useState('')
-  const [meetingInfo, setMeetingInfo] = useState(null)
+  const [meetingInfo, setMeetingInfo] = useState<Meeting | null>(null)
 
   const fetchMeetingInfo = useCallback(
-    async (meetingCode) => {
+    async (meetingCode: string) => {
       try {
         const response = await fetch(`/api/meetings/code/${meetingCode}`)
         if (response.ok) {
-          const data = await response.json()
+          const data: Meeting = await response.json()
           setMeetingInfo(data)
 
           // If this is a facilitator code, redirect to facilitator view
@@ -36,7 +37,7 @@ export default function JoinMeeting() {
     }
   }, [urlCode, fetchMeetingInfo])
 
-  const handleCodeChange = (e) => {
+  const handleCodeChange = (e: ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '')
     setCode(value)
     setError('')
@@ -48,7 +49,7 @@ export default function JoinMeeting() {
     }
   }
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
     setError('')
 
@@ -72,7 +73,7 @@ export default function JoinMeeting() {
         throw new Error('Meeting not found')
       }
 
-      const data = await response.json()
+      const data: Meeting = await response.json()
 
       if (data.isFacilitator) {
         navigate(`/facilitate/${code}`)
@@ -83,7 +84,7 @@ export default function JoinMeeting() {
         navigate(`/session/${code}`)
       }
     } catch (err) {
-      setError(err.message || 'Failed to join meeting')
+      setError(err instanceof Error ? err.message : 'Failed to join meeting')
     } finally {
       setIsJoining(false)
     }

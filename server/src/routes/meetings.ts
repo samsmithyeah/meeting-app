@@ -1,13 +1,21 @@
-import { Router } from 'express'
+import { Router, Request, Response } from 'express'
 import { customAlphabet } from 'nanoid'
 import { supabase } from '../config/supabase.js'
 import { setSessionStatus, clearSession } from '../config/redis.js'
+import type { TypedServer, CreateMeetingRequest } from '../types/index.js'
 
 const router = Router()
 const generateCode = customAlphabet('ABCDEFGHJKLMNPQRSTUVWXYZ23456789', 6)
 
+// Extend Express Request to include app with io
+interface AppRequest extends Request {
+  app: Request['app'] & {
+    get(name: 'io'): TypedServer
+  }
+}
+
 // Create a new meeting
-router.post('/', async (req, res) => {
+router.post('/', async (req: Request<object, object, CreateMeetingRequest>, res: Response) => {
   try {
     const { title, showParticipantNames = true, questions = [] } = req.body
 
@@ -71,7 +79,7 @@ router.post('/', async (req, res) => {
 })
 
 // Get meeting by code (works for both facilitator and participant codes)
-router.get('/code/:code', async (req, res) => {
+router.get('/code/:code', async (req: Request<{ code: string }>, res: Response) => {
   try {
     const { code } = req.params
     const upperCode = code.toUpperCase()
@@ -127,7 +135,7 @@ router.get('/code/:code', async (req, res) => {
 })
 
 // Get meeting by ID
-router.get('/:id', async (req, res) => {
+router.get('/:id', async (req: Request<{ id: string }>, res: Response) => {
   try {
     const { id } = req.params
 
@@ -157,39 +165,49 @@ router.get('/:id', async (req, res) => {
   }
 })
 
+interface UpdateMeetingBody {
+  title?: string
+  showParticipantNames?: boolean
+  status?: string
+  currentQuestionIndex?: number
+}
+
 // Update meeting
-router.put('/:id', async (req, res) => {
-  try {
-    const { id } = req.params
-    const { title, showParticipantNames, status, currentQuestionIndex } = req.body
+router.put(
+  '/:id',
+  async (req: Request<{ id: string }, object, UpdateMeetingBody>, res: Response) => {
+    try {
+      const { id } = req.params
+      const { title, showParticipantNames, status, currentQuestionIndex } = req.body
 
-    const updates = {}
-    if (title !== undefined) updates.title = title
-    if (showParticipantNames !== undefined) updates.show_participant_names = showParticipantNames
-    if (status !== undefined) updates.status = status
-    if (currentQuestionIndex !== undefined) updates.current_question_index = currentQuestionIndex
-    updates.updated_at = new Date().toISOString()
+      const updates: Record<string, unknown> = {}
+      if (title !== undefined) updates.title = title
+      if (showParticipantNames !== undefined) updates.show_participant_names = showParticipantNames
+      if (status !== undefined) updates.status = status
+      if (currentQuestionIndex !== undefined) updates.current_question_index = currentQuestionIndex
+      updates.updated_at = new Date().toISOString()
 
-    const { data: meeting, error } = await supabase
-      .from('meetings')
-      .update(updates)
-      .eq('id', id)
-      .select()
-      .single()
+      const { data: meeting, error } = await supabase
+        .from('meetings')
+        .update(updates)
+        .eq('id', id)
+        .select()
+        .single()
 
-    if (error) {
-      return res.status(500).json({ error: 'Failed to update meeting' })
+      if (error) {
+        return res.status(500).json({ error: 'Failed to update meeting' })
+      }
+
+      res.json(meeting)
+    } catch (error) {
+      console.error('Update meeting error:', error)
+      res.status(500).json({ error: 'Internal server error' })
     }
-
-    res.json(meeting)
-  } catch (error) {
-    console.error('Update meeting error:', error)
-    res.status(500).json({ error: 'Internal server error' })
   }
-})
+)
 
 // Start meeting session
-router.post('/:id/start', async (req, res) => {
+router.post('/:id/start', async (req: AppRequest, res: Response) => {
   try {
     const { id } = req.params
 
@@ -220,7 +238,7 @@ router.post('/:id/start', async (req, res) => {
 })
 
 // End meeting session
-router.post('/:id/end', async (req, res) => {
+router.post('/:id/end', async (req: AppRequest, res: Response) => {
   try {
     const { id } = req.params
 
@@ -244,50 +262,61 @@ router.post('/:id/end', async (req, res) => {
   }
 })
 
+interface AddQuestionsBody {
+  questions?: {
+    text: string
+    allowMultipleAnswers?: boolean
+    timeLimitSeconds?: number | null
+  }[]
+}
+
 // Add questions to meeting
-router.post('/:id/questions', async (req, res) => {
-  try {
-    const { id } = req.params
-    const { questions } = req.body
+router.post(
+  '/:id/questions',
+  async (req: Request<{ id: string }, object, AddQuestionsBody>, res: Response) => {
+    try {
+      const { id } = req.params
+      const { questions } = req.body
 
-    if (!questions || !Array.isArray(questions)) {
-      return res.status(400).json({ error: 'Questions array is required' })
+      if (!questions || !Array.isArray(questions)) {
+        return res.status(400).json({ error: 'Questions array is required' })
+      }
+
+      // Get current max order_index
+      const { data: existingQuestions } = await supabase
+        .from('questions')
+        .select('order_index')
+        .eq('meeting_id', id)
+        .order('order_index', { ascending: false })
+        .limit(1)
+
+      const startIndex = existingQuestions?.length ? existingQuestions[0].order_index + 1 : 0
+
+      const questionsToInsert = questions.map((q, index) => ({
+        meeting_id: id,
+        text: q.text,
+        order_index: startIndex + index,
+        allow_multiple_answers: q.allowMultipleAnswers || false,
+        time_limit_seconds: q.timeLimitSeconds || null,
+        status: 'pending'
+      }))
+
+      const { data, error } = await supabase.from('questions').insert(questionsToInsert).select()
+
+      if (error) {
+        return res.status(500).json({ error: 'Failed to add questions' })
+      }
+
+      res.status(201).json(data)
+    } catch (error) {
+      console.error('Add questions error:', error)
+      res.status(500).json({ error: 'Internal server error' })
     }
-
-    // Get current max order_index
-    const { data: existingQuestions } = await supabase
-      .from('questions')
-      .select('order_index')
-      .eq('meeting_id', id)
-      .order('order_index', { ascending: false })
-      .limit(1)
-
-    const startIndex = existingQuestions?.length > 0 ? existingQuestions[0].order_index + 1 : 0
-
-    const questionsToInsert = questions.map((q, index) => ({
-      meeting_id: id,
-      text: q.text,
-      order_index: startIndex + index,
-      allow_multiple_answers: q.allowMultipleAnswers || false,
-      time_limit_seconds: q.timeLimitSeconds || null,
-      status: 'pending'
-    }))
-
-    const { data, error } = await supabase.from('questions').insert(questionsToInsert).select()
-
-    if (error) {
-      return res.status(500).json({ error: 'Failed to add questions' })
-    }
-
-    res.status(201).json(data)
-  } catch (error) {
-    console.error('Add questions error:', error)
-    res.status(500).json({ error: 'Internal server error' })
   }
-})
+)
 
 // Get participants for meeting
-router.get('/:id/participants', async (req, res) => {
+router.get('/:id/participants', async (req: Request<{ id: string }>, res: Response) => {
   try {
     const { id } = req.params
 

@@ -8,10 +8,22 @@ import cors from 'cors'
 import meetingsRouter from './routes/meetings.js'
 import questionsRouter from './routes/questions.js'
 import { setupSocketHandlers } from './socket/handlers.js'
+import type {
+  ServerToClientEvents,
+  ClientToServerEvents,
+  InterServerEvents,
+  SocketData,
+  TypedServer
+} from './types/index.js'
 
 const app = express()
 const httpServer = createServer(app)
-const io = new Server(httpServer, {
+const io: TypedServer = new Server<
+  ClientToServerEvents,
+  ServerToClientEvents,
+  InterServerEvents,
+  SocketData
+>(httpServer, {
   cors: {
     origin: process.env.CLIENT_URL || 'http://localhost:5173',
     methods: ['GET', 'POST']
@@ -34,7 +46,7 @@ app.use('/api/meetings', meetingsRouter)
 app.use('/api/questions', questionsRouter)
 
 // Health check
-app.get('/api/health', (req, res) => {
+app.get('/api/health', (_req, res) => {
   res.json({ status: 'ok' })
 })
 

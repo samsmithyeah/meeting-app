@@ -1,4 +1,6 @@
-export default function AnswerReveal({ answers, summary, showNames }) {
+import type { AnswerRevealProps } from '../types'
+
+export default function AnswerReveal({ answers, summary, showNames }: AnswerRevealProps) {
   return (
     <div className="space-y-4">
       {/* AI Summary */}

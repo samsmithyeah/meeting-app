@@ -5,13 +5,15 @@
       "project": ["*.js"]
     },
     "client": {
-      "entry": ["src/main.jsx"],
-      "project": ["src/**/*.{js,jsx}"]
+      "entry": ["src/main.tsx", "src/types/index.ts"],
+      "project": ["src/**/*.{ts,tsx}"]
     },
     "server": {
-      "entry": ["src/index.js"],
-      "project": ["src/**/*.js"]
+      "entry": ["src/index.ts", "src/types/index.ts"],
+      "project": ["src/**/*.ts"]
     }
   },
-  "ignore": ["**/node_modules/**"]
+  "ignore": ["**/node_modules/**"],
+  "ignoreBinaries": ["tsc"],
+  "ignoreExportsUsedInFile": true
 }
