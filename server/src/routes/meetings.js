@@ -51,7 +51,9 @@ router.post('/', async (req, res) => {
 
       if (questionsError) {
         console.error('Questions creation error:', questionsError)
-        // Meeting was created but questions failed - still return meeting
+        // Rollback: delete the meeting to maintain consistency
+        await supabase.from('meetings').delete().eq('id', meeting.id)
+        return res.status(500).json({ error: 'Failed to create meeting with questions' })
       }
     }
 

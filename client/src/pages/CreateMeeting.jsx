@@ -1,30 +1,34 @@
 import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 
+let questionId = 0
+const generateQuestionId = () => `question-${++questionId}`
+
 export default function CreateMeeting() {
   const navigate = useNavigate()
   const [title, setTitle] = useState('')
   const [showParticipantNames, setShowParticipantNames] = useState(true)
   const [questions, setQuestions] = useState([
-    { text: '', allowMultipleAnswers: false, timeLimitSeconds: null }
+    { id: generateQuestionId(), text: '', allowMultipleAnswers: false, timeLimitSeconds: null }
   ])
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState('')
 
   const addQuestion = () => {
-    setQuestions([...questions, { text: '', allowMultipleAnswers: false, timeLimitSeconds: null }])
+    setQuestions([
+      ...questions,
+      { id: generateQuestionId(), text: '', allowMultipleAnswers: false, timeLimitSeconds: null }
+    ])
   }
 
-  const removeQuestion = (index) => {
+  const removeQuestion = (id) => {
     if (questions.length > 1) {
-      setQuestions(questions.filter((_, i) => i !== index))
+      setQuestions(questions.filter((q) => q.id !== id))
     }
   }
 
-  const updateQuestion = (index, field, value) => {
-    const updated = [...questions]
-    updated[index] = { ...updated[index], [field]: value }
-    setQuestions(updated)
+  const updateQuestion = (id, field, value) => {
+    setQuestions(questions.map((q) => (q.id === id ? { ...q, [field]: value } : q)))
   }
 
   const handleSubmit = async (e) => {
@@ -51,7 +55,11 @@ export default function CreateMeeting() {
         body: JSON.stringify({
           title: title.trim(),
           showParticipantNames,
-          questions: validQuestions
+          questions: validQuestions.map(({ text, allowMultipleAnswers, timeLimitSeconds }) => ({
+            text,
+            allowMultipleAnswers,
+            timeLimitSeconds
+          }))
         })
       })
 
@@ -112,20 +120,20 @@ export default function CreateMeeting() {
               <label className="block text-sm font-medium text-gray-700 mb-3">Questions</label>
               <div className="space-y-4">
                 {questions.map((question, index) => (
-                  <div key={index} className="p-4 border border-gray-200 rounded-lg">
+                  <div key={question.id} className="p-4 border border-gray-200 rounded-lg">
                     <div className="flex gap-2 mb-3">
                       <span className="text-sm font-medium text-gray-500 mt-2">{index + 1}.</span>
                       <input
                         type="text"
                         value={question.text}
-                        onChange={(e) => updateQuestion(index, 'text', e.target.value)}
+                        onChange={(e) => updateQuestion(question.id, 'text', e.target.value)}
                         className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                         placeholder="Enter your question"
                       />
                       {questions.length > 1 && (
                         <button
                           type="button"
-                          onClick={() => removeQuestion(index)}
+                          onClick={() => removeQuestion(question.id)}
                           className="text-red-500 hover:text-red-700 px-2"
                         >
                           Remove
@@ -139,7 +147,7 @@ export default function CreateMeeting() {
                           type="checkbox"
                           checked={question.allowMultipleAnswers}
                           onChange={(e) =>
-                            updateQuestion(index, 'allowMultipleAnswers', e.target.checked)
+                            updateQuestion(question.id, 'allowMultipleAnswers', e.target.checked)
                           }
                           className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded mr-2"
                         />
@@ -152,7 +160,7 @@ export default function CreateMeeting() {
                           value={question.timeLimitSeconds || ''}
                           onChange={(e) =>
                             updateQuestion(
-                              index,
+                              question.id,
                               'timeLimitSeconds',
                               e.target.value ? parseInt(e.target.value) : null
                             )
