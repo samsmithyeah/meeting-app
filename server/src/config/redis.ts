@@ -161,6 +161,6 @@ export async function clearSession(meetingId: string): Promise<void> {
     }
   }
   if (keysToDelete.length > 0) {
-    await redis.del(keysToDelete)
+    await redis.del(...keysToDelete)
   }
 }

@@ -52,6 +52,13 @@ export function setupSocketHandlers(io: TypedServer): void {
           .single()
 
         if (error) {
+          // Check for unique constraint violation (duplicate name)
+          if (error.code === '23505') {
+            socket.emit('error', {
+              message: 'This name is already taken. Please choose a different name.'
+            })
+            return
+          }
           socket.emit('error', { message: 'Failed to join meeting' })
           return
         }
@@ -119,7 +126,7 @@ export function setupSocketHandlers(io: TypedServer): void {
         io.to(`meeting:${meetingId}`).emit('question-started', {
           questionId,
           question: question?.text,
-          allowMultipleAnswers: question?.allow_multiple_answers,
+          allow_multiple_answers: question?.allow_multiple_answers,
           timerEnd
         })
 

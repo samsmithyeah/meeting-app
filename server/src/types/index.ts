@@ -61,7 +61,7 @@ export interface ServerToClientEvents {
   'question-started': (data: {
     questionId: string
     question: string | undefined
-    allowMultipleAnswers: boolean | undefined
+    allow_multiple_answers: boolean | undefined
     timerEnd: number | null
   }) => void
   'answer-received': () => void

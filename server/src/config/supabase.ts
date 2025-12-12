@@ -8,13 +8,12 @@ function getSupabase(): SupabaseClient {
     const supabaseKey = process.env.SUPABASE_ANON_KEY
 
     if (!supabaseUrl || !supabaseKey) {
-      console.warn('Warning: Supabase credentials not configured. Database operations will fail.')
+      throw new Error(
+        'Supabase credentials (SUPABASE_URL and SUPABASE_ANON_KEY) are not configured.'
+      )
     }
 
-    _supabase = createClient(
-      supabaseUrl || 'https://placeholder.supabase.co',
-      supabaseKey || 'placeholder-key'
-    )
+    _supabase = createClient(supabaseUrl, supabaseKey)
   }
   return _supabase
 }

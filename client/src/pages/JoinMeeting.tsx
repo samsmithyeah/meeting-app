@@ -80,7 +80,6 @@ export default function JoinMeeting() {
       } else {
         // Store participant name and navigate to session
         sessionStorage.setItem('participantName', name.trim())
-        sessionStorage.setItem('meetingId', data.id)
         navigate(`/session/${code}`)
       }
     } catch (err) {

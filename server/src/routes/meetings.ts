@@ -26,52 +26,21 @@ router.post('/', async (req: Request<object, object, CreateMeetingRequest>, res:
     const facilitatorCode = generateCode()
     const participantCode = generateCode()
 
-    // Create meeting
-    const { data: meeting, error: meetingError } = await supabase
-      .from('meetings')
-      .insert({
-        title,
-        facilitator_code: facilitatorCode,
-        participant_code: participantCode,
-        show_participant_names: showParticipantNames,
-        status: 'draft'
-      })
-      .select()
-      .single()
+    // Use RPC for atomic creation of meeting with questions
+    const { data, error } = await supabase.rpc('create_meeting_with_questions', {
+      p_title: title,
+      p_facilitator_code: facilitatorCode,
+      p_participant_code: participantCode,
+      p_show_participant_names: showParticipantNames,
+      p_questions: questions
+    })
 
-    if (meetingError) {
-      console.error('Meeting creation error:', meetingError)
+    if (error) {
+      console.error('Meeting creation error:', error)
       return res.status(500).json({ error: 'Failed to create meeting' })
     }
 
-    // Create questions if provided
-    if (questions.length > 0) {
-      const questionsToInsert = questions.map((q, index) => ({
-        meeting_id: meeting.id,
-        text: q.text,
-        order_index: index,
-        allow_multiple_answers: q.allowMultipleAnswers || false,
-        time_limit_seconds: q.timeLimitSeconds || null,
-        status: 'pending'
-      }))
-
-      const { error: questionsError } = await supabase.from('questions').insert(questionsToInsert)
-
-      if (questionsError) {
-        console.error('Questions creation error:', questionsError)
-        // Rollback: delete the meeting to maintain consistency
-        await supabase.from('meetings').delete().eq('id', meeting.id)
-        return res.status(500).json({ error: 'Failed to create meeting with questions' })
-      }
-    }
-
-    res.status(201).json({
-      id: meeting.id,
-      title: meeting.title,
-      facilitatorCode,
-      participantCode,
-      showParticipantNames: meeting.show_participant_names
-    })
+    res.status(201).json(data)
   } catch (error) {
     console.error('Create meeting error:', error)
     res.status(500).json({ error: 'Internal server error' })
@@ -84,31 +53,17 @@ router.get('/code/:code', async (req: Request<{ code: string }>, res: Response) 
     const { code } = req.params
     const upperCode = code.toUpperCase()
 
-    // Try facilitator code first
-    let { data: meeting, error } = await supabase
+    const { data: meeting, error } = await supabase
       .from('meetings')
       .select('*')
-      .eq('facilitator_code', upperCode)
+      .or(`facilitator_code.eq.${upperCode},participant_code.eq.${upperCode}`)
       .single()
-
-    let isFacilitator = true
-
-    if (!meeting) {
-      // Try participant code
-      const result = await supabase
-        .from('meetings')
-        .select('*')
-        .eq('participant_code', upperCode)
-        .single()
-
-      meeting = result.data
-      error = result.error
-      isFacilitator = false
-    }
 
     if (error || !meeting) {
       return res.status(404).json({ error: 'Meeting not found' })
     }
+
+    const isFacilitator = meeting.facilitator_code === upperCode
 
     // Get questions
     const { data: questions } = await supabase
