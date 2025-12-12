@@ -156,6 +156,7 @@ router.get('/:id', async (req: Request<{ id: string }>, res: Response) => {
 })
 
 interface UpdateMeetingBody {
+  facilitatorCode?: string
   title?: string
   showParticipantNames?: boolean
   status?: string
@@ -168,7 +169,13 @@ router.put(
   async (req: Request<{ id: string }, object, UpdateMeetingBody>, res: Response) => {
     try {
       const { id } = req.params
-      const { title, showParticipantNames, status, currentQuestionIndex } = req.body
+      const { facilitatorCode, title, showParticipantNames, status, currentQuestionIndex } =
+        req.body
+
+      // Verify facilitator authorization
+      if (!facilitatorCode || !(await verifyFacilitator(id, facilitatorCode))) {
+        return res.status(403).json({ error: 'Unauthorized: Invalid facilitator code' })
+      }
 
       const updates: Record<string, unknown> = {}
       if (title !== undefined) updates.title = title
@@ -265,6 +272,7 @@ router.post('/:id/end', async (req: AppRequest, res: Response) => {
 })
 
 interface AddQuestionsBody {
+  facilitatorCode?: string
   questions?: {
     text: string
     allowMultipleAnswers?: boolean
@@ -278,7 +286,12 @@ router.post(
   async (req: Request<{ id: string }, object, AddQuestionsBody>, res: Response) => {
     try {
       const { id } = req.params
-      const { questions } = req.body
+      const { facilitatorCode, questions } = req.body
+
+      // Verify facilitator authorization
+      if (!facilitatorCode || !(await verifyFacilitator(id, facilitatorCode))) {
+        return res.status(403).json({ error: 'Unauthorized: Invalid facilitator code' })
+      }
 
       if (!questions || !Array.isArray(questions)) {
         return res.status(400).json({ error: 'Questions array is required' })
@@ -317,10 +330,16 @@ router.post(
   }
 )
 
-// Get participants for meeting
+// Get participants for meeting (facilitator only)
 router.get('/:id/participants', async (req: Request<{ id: string }>, res: Response) => {
   try {
     const { id } = req.params
+    const facilitatorCode = req.query.facilitatorCode as string | undefined
+
+    // Verify facilitator authorization
+    if (!facilitatorCode || !(await verifyFacilitator(id, facilitatorCode))) {
+      return res.status(403).json({ error: 'Unauthorized: Invalid facilitator code' })
+    }
 
     const { data: participants, error } = await supabase
       .from('participants')

@@ -64,7 +64,7 @@ export async function getSessionState(meetingId: string): Promise<SessionState> 
     currentQuestionId: currentQuestion,
     participants,
     answeredParticipants: answered,
-    timerEnd: timerEnd ? parseInt(timerEnd) : null
+    timerEnd: timerEnd ? parseInt(timerEnd, 10) : null
   }
 }
 
