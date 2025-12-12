@@ -234,9 +234,7 @@ export function setupSocketHandlers(io: TypedServer): void {
 
         // Format answers based on anonymity setting
         const formattedAnswers = (answers || []).map((a) => {
-          const participant = Array.isArray(a.participants)
-            ? a.participants[0]
-            : a.participants
+          const participant = Array.isArray(a.participants) ? a.participants[0] : a.participants
           const participantName = participant?.name ?? null
           return {
             id: a.id,
