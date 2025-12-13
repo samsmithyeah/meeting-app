@@ -245,6 +245,8 @@ export function setupSocketHandlers(io: TypedServer): void {
         }
 
         // Format answers based on anonymity setting
+        // Note: Array.isArray check is required because Supabase TypeScript types
+        // infer joined relations as arrays, even for many-to-one relationships
         const formattedAnswers = (answers || []).map((a) => {
           const participant = Array.isArray(a.participants) ? a.participants[0] : a.participants
           const participantName = participant?.name ?? null

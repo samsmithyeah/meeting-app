@@ -3,7 +3,7 @@ import type { SessionState } from '../types/index.js'
 
 let _redis: Redis | null = null
 
-function getRedis(): Redis | null {
+function getRedis(): Redis {
   if (!_redis) {
     const redisUrl = process.env.REDIS_URL || 'redis://localhost:6379'
     try {
@@ -41,10 +41,6 @@ const sessionKeys = {
 
 export async function getSessionState(meetingId: string): Promise<SessionState> {
   const redis = getRedis()
-  if (!redis) {
-    console.error('Redis client is not available for getSessionState')
-    throw new Error('Cache service is unavailable')
-  }
 
   const [status, currentQuestion, timerEnd] = await Promise.all([
     redis.get(sessionKeys.status(meetingId)),
@@ -73,37 +69,21 @@ export async function setSessionStatus(
   status: SessionState['status']
 ): Promise<void> {
   const redis = getRedis()
-  if (!redis) {
-    console.error('Redis client is not available for setSessionStatus')
-    throw new Error('Cache service is unavailable')
-  }
   await redis.set(sessionKeys.status(meetingId), status)
 }
 
 export async function setCurrentQuestion(meetingId: string, questionId: string): Promise<void> {
   const redis = getRedis()
-  if (!redis) {
-    console.error('Redis client is not available for setCurrentQuestion')
-    throw new Error('Cache service is unavailable')
-  }
   await redis.set(sessionKeys.currentQuestion(meetingId), questionId)
 }
 
 export async function addParticipant(meetingId: string, participantId: string): Promise<void> {
   const redis = getRedis()
-  if (!redis) {
-    console.error('Redis client is not available for addParticipant')
-    throw new Error('Cache service is unavailable')
-  }
   await redis.sadd(sessionKeys.participants(meetingId), participantId)
 }
 
 export async function removeParticipant(meetingId: string, participantId: string): Promise<void> {
   const redis = getRedis()
-  if (!redis) {
-    console.error('Redis client is not available for removeParticipant')
-    throw new Error('Cache service is unavailable')
-  }
   await redis.srem(sessionKeys.participants(meetingId), participantId)
 }
 
@@ -113,46 +93,26 @@ export async function markAnswered(
   participantId: string
 ): Promise<void> {
   const redis = getRedis()
-  if (!redis) {
-    console.error('Redis client is not available for markAnswered')
-    throw new Error('Cache service is unavailable')
-  }
   await redis.sadd(sessionKeys.answered(meetingId, questionId), participantId)
 }
 
 export async function clearAnswered(meetingId: string, questionId: string): Promise<void> {
   const redis = getRedis()
-  if (!redis) {
-    console.error('Redis client is not available for clearAnswered')
-    throw new Error('Cache service is unavailable')
-  }
   await redis.del(sessionKeys.answered(meetingId, questionId))
 }
 
 export async function setTimer(meetingId: string, endTime: number): Promise<void> {
   const redis = getRedis()
-  if (!redis) {
-    console.error('Redis client is not available for setTimer')
-    throw new Error('Cache service is unavailable')
-  }
   await redis.set(sessionKeys.timerEnd(meetingId), endTime.toString())
 }
 
 export async function clearTimer(meetingId: string): Promise<void> {
   const redis = getRedis()
-  if (!redis) {
-    console.error('Redis client is not available for clearTimer')
-    throw new Error('Cache service is unavailable')
-  }
   await redis.del(sessionKeys.timerEnd(meetingId))
 }
 
 export async function clearSession(meetingId: string): Promise<void> {
   const redis = getRedis()
-  if (!redis) {
-    console.error('Redis client is not available for clearSession')
-    throw new Error('Cache service is unavailable')
-  }
 
   const stream = redis.scanStream({ match: `session:${meetingId}:*` })
   const keysToDelete: string[] = []

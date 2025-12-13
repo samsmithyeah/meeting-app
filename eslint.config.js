@@ -13,27 +13,6 @@ export default tseslint.config(
     languageOptions: {
       ecmaVersion: 'latest',
       sourceType: 'module',
-      globals: {
-        console: 'readonly',
-        process: 'readonly',
-        setTimeout: 'readonly',
-        clearInterval: 'readonly',
-        setInterval: 'readonly',
-        fetch: 'readonly',
-        window: 'readonly',
-        document: 'readonly',
-        sessionStorage: 'readonly',
-        navigator: 'readonly',
-        Date: 'readonly',
-        Promise: 'readonly',
-        Array: 'readonly',
-        Object: 'readonly',
-        Map: 'readonly',
-        Set: 'readonly',
-        JSON: 'readonly',
-        URL: 'readonly',
-        Proxy: 'readonly'
-      },
       parserOptions: {
         ecmaFeatures: {
           jsx: true
