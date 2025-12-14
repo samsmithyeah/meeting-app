@@ -14,6 +14,9 @@ import {
 import { summarizeAnswers } from '../services/ai.js'
 import type { TypedServer, TypedSocket } from '../types/index.js'
 
+// PostgreSQL error codes
+const PG_UNIQUE_VIOLATION = '23505'
+
 export function setupSocketHandlers(io: TypedServer): void {
   io.on('connection', (socket: TypedSocket) => {
     console.log('Client connected:', socket.id)
@@ -53,7 +56,7 @@ export function setupSocketHandlers(io: TypedServer): void {
 
         if (error) {
           // Check for unique constraint violation (duplicate name)
-          if (error.code === '23505') {
+          if (error.code === PG_UNIQUE_VIOLATION) {
             socket.emit('error', {
               message: 'This name is already taken. Please choose a different name.'
             })

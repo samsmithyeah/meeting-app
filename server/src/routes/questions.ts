@@ -9,21 +9,11 @@ async function verifyQuestionFacilitator(
   questionId: string,
   facilitatorCode: string
 ): Promise<boolean> {
-  const { data } = await supabase
-    .from('questions')
-    .select('meeting_id')
-    .eq('id', questionId)
-    .single()
-
-  if (!data?.meeting_id) return false
-
-  const { data: meeting } = await supabase
-    .from('meetings')
-    .select('facilitator_code')
-    .eq('id', data.meeting_id)
-    .single()
-
-  return meeting?.facilitator_code === facilitatorCode
+  const { data } = await supabase.rpc('verify_question_facilitator', {
+    p_question_id: questionId,
+    p_facilitator_code: facilitatorCode
+  })
+  return data === true
 }
 
 // Get question by ID with answers

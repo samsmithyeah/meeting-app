@@ -114,3 +114,21 @@ BEGIN
   );
 END;
 $$;
+
+-- RPC function to verify facilitator authorization for a question
+CREATE OR REPLACE FUNCTION verify_question_facilitator(
+  p_question_id UUID,
+  p_facilitator_code VARCHAR(6)
+)
+RETURNS BOOLEAN
+LANGUAGE plpgsql
+AS $$
+BEGIN
+  RETURN EXISTS (
+    SELECT 1
+    FROM questions q
+    JOIN meetings m ON q.meeting_id = m.id
+    WHERE q.id = p_question_id AND m.facilitator_code = p_facilitator_code
+  );
+END;
+$$;
