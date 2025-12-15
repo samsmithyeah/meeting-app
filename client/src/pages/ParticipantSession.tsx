@@ -47,86 +47,119 @@ export default function ParticipantSession() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-gray-500">Loading...</div>
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="surface p-8 w-full max-w-md mx-4">
+          <div className="skeleton h-5 w-40" />
+          <div className="mt-6 space-y-3">
+            <div className="skeleton h-14 w-full" />
+            <div className="skeleton h-14 w-full" />
+            <div className="skeleton h-14 w-full" />
+          </div>
+          <p className="mt-6 text-sm text-muted">Loading session…</p>
+        </div>
       </div>
     )
   }
 
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-red-500">{error}</div>
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="surface p-8 w-full max-w-md mx-4">
+          <div className="flex items-start gap-3">
+            <div className="h-10 w-10 rounded-2xl bg-danger/10 text-danger flex items-center justify-center">
+              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 9v4m0 4h.01M10.29 3.86l-7.2 12.47A1.5 1.5 0 004.39 18h15.22a1.5 1.5 0 001.3-2.25l-7.2-12.47a1.5 1.5 0 00-2.6 0z"
+                />
+              </svg>
+            </div>
+            <div className="min-w-0">
+              <p className="text-sm font-semibold text-ink">Something went wrong</p>
+              <p className="mt-1 text-sm text-muted">{error}</p>
+            </div>
+          </div>
+        </div>
       </div>
     )
   }
 
   if (!meeting) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-gray-500">Meeting not found</div>
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="surface p-8 w-full max-w-md mx-4">
+          <p className="text-sm font-semibold text-ink">Meeting not found</p>
+          <p className="mt-1 text-sm text-muted">Double-check the code, then try again.</p>
+        </div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen">
       {/* Header */}
-      <header className="bg-white shadow-sm">
-        <div className="max-w-lg mx-auto px-4 py-4">
-          <h1 className="text-lg font-bold text-gray-900">{meeting.title}</h1>
-          <p className="text-sm text-gray-500">Joined as {participantName}</p>
+      <header className="sticky top-0 z-40 border-b border-stroke/60 bg-surface/70 backdrop-blur">
+        <div className="container-app py-4">
+          <div className="flex items-center justify-between gap-4">
+            <div className="min-w-0">
+              <h1 className="truncate text-base font-semibold tracking-tight text-ink">
+                {meeting.title}
+              </h1>
+              <p className="truncate text-sm text-muted">Joined as {participantName}</p>
+            </div>
+            <span className="badge">
+              {meetingStatus === 'draft'
+                ? 'Waiting'
+                : sessionStatus === 'answering'
+                  ? 'Answering'
+                  : sessionStatus === 'revealed'
+                    ? 'Revealed'
+                    : 'Ready'}
+            </span>
+          </div>
         </div>
       </header>
 
-      <main className="max-w-lg mx-auto px-4 py-6">
+      <main className="container-app max-w-2xl py-6 sm:py-8">
         {/* Waiting for meeting to start */}
         {meetingStatus === 'draft' && (
-          <div className="bg-white rounded-xl shadow p-8 text-center">
-            <div className="animate-pulse mb-4">
-              <div className="w-16 h-16 bg-indigo-100 rounded-full mx-auto flex items-center justify-center">
-                <svg
-                  className="w-8 h-8 text-indigo-600"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                  />
-                </svg>
-              </div>
+          <div className="surface p-8 text-center animate-fade-up">
+            <div className="mx-auto mb-5 h-14 w-14 rounded-2xl bg-accent/10 text-accent flex items-center justify-center">
+              <svg className="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
+              </svg>
             </div>
-            <h2 className="text-xl font-semibold mb-2">Waiting for meeting to start...</h2>
-            <p className="text-gray-500">The facilitator will begin shortly</p>
+            <h2 className="text-xl font-semibold tracking-tight text-ink">
+              Waiting for the facilitator…
+            </h2>
+            <p className="mt-2 text-sm text-muted">
+              You’re connected. The meeting will begin shortly.
+            </p>
           </div>
         )}
 
         {/* Meeting active - waiting for question */}
         {meetingStatus === 'active' && sessionStatus === 'waiting' && !currentQuestion && (
-          <div className="bg-white rounded-xl shadow p-8 text-center">
-            <div className="animate-pulse mb-4">
-              <div className="w-16 h-16 bg-green-100 rounded-full mx-auto flex items-center justify-center">
-                <svg
-                  className="w-8 h-8 text-green-600"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M5 13l4 4L19 7"
-                  />
-                </svg>
-              </div>
+          <div className="surface p-8 text-center animate-fade-up">
+            <div className="mx-auto mb-5 h-14 w-14 rounded-2xl bg-success/10 text-success flex items-center justify-center">
+              <svg className="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M5 13l4 4L19 7"
+                />
+              </svg>
             </div>
-            <h2 className="text-xl font-semibold mb-2">You're in!</h2>
-            <p className="text-gray-500">Waiting for the next question...</p>
+            <h2 className="text-xl font-semibold tracking-tight text-ink">You’re in.</h2>
+            <p className="mt-2 text-sm text-muted">Waiting for the next question.</p>
           </div>
         )}
 
@@ -149,7 +182,7 @@ export default function ParticipantSession() {
             />
 
             {myAnswers.length > 0 && (
-              <div className="text-center text-sm text-gray-500">
+              <div className="text-center text-sm text-muted">
                 {answeredCount}/{totalCount} participants have answered
               </div>
             )}
@@ -171,8 +204,9 @@ export default function ParticipantSession() {
               showNames={meeting.showParticipantNames ?? true}
               isFacilitator={false}
             />
-            <div className="bg-blue-50 rounded-xl p-4 text-center">
-              <p className="text-blue-800">Waiting for facilitator to continue...</p>
+            <div className="rounded-3xl border border-stroke/70 bg-surface2/70 p-5 text-center shadow-inset">
+              <p className="text-sm font-semibold text-ink">Waiting for the facilitator…</p>
+              <p className="mt-1 text-sm text-muted">Next question will appear automatically.</p>
             </div>
           </div>
         )}

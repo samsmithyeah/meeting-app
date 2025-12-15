@@ -35,27 +35,39 @@ export default function QuestionCard({
   }
 
   return (
-    <div className="bg-white rounded-xl shadow-lg p-6">
+    <div className="surface p-6 sm:p-8">
       {/* Timer */}
       {timeLeft !== null && status === 'answering' && (
-        <div className={`mb-4 text-center ${timeLeft <= 10 ? 'text-red-600' : 'text-gray-600'}`}>
-          <div className="text-3xl font-mono font-bold">{formatTime(timeLeft)}</div>
-          <div className="text-sm">remaining</div>
+        <div
+          className={`mb-5 rounded-2xl border p-4 text-center shadow-inset ${
+            timeLeft <= 10
+              ? 'border-danger/25 bg-danger/5 text-danger'
+              : 'border-stroke/70 bg-surface2/70 text-muted'
+          }`}
+        >
+          <div className="text-3xl font-mono font-semibold tracking-tight">
+            {formatTime(timeLeft)}
+          </div>
+          <div className="mt-1 text-xs font-semibold uppercase tracking-widest">remaining</div>
         </div>
       )}
 
       {/* Question */}
-      <div className="text-xl font-medium text-gray-900 text-center">{question.text}</div>
+      <div className="text-center">
+        <h2 className="text-balance text-xl sm:text-2xl font-semibold tracking-tight text-ink">
+          {question.text}
+        </h2>
+      </div>
 
       {/* Status indicators */}
       {isFacilitator && status === 'answering' && (
         <div className="mt-4 text-center">
-          <div className="inline-flex items-center gap-2 bg-blue-50 text-blue-700 px-4 py-2 rounded-full">
+          <div className="inline-flex items-center gap-2 rounded-full border border-stroke/70 bg-surface2/70 px-4 py-2 text-ink shadow-inset">
             <span className="relative flex h-3 w-3">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-3 w-3 bg-blue-500"></span>
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent/70 opacity-60"></span>
+              <span className="relative inline-flex rounded-full h-3 w-3 bg-accent"></span>
             </span>
-            <span className="font-medium">
+            <span className="font-semibold">
               {answeredCount} of {totalCount} answered
             </span>
           </div>
@@ -64,7 +76,7 @@ export default function QuestionCard({
 
       {status === 'revealed' && (
         <div className="mt-4 text-center">
-          <span className="inline-flex items-center gap-2 bg-green-50 text-green-700 px-4 py-2 rounded-full">
+          <span className="inline-flex items-center gap-2 rounded-full border border-success/25 bg-success/10 px-4 py-2 text-success shadow-inset">
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path
                 strokeLinecap="round"
@@ -79,14 +91,14 @@ export default function QuestionCard({
                 d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
               />
             </svg>
-            <span className="font-medium">Answers Revealed</span>
+            <span className="font-semibold">Answers revealed</span>
           </span>
         </div>
       )}
 
       {/* Question options indicator */}
       {question.allowMultipleAnswers && status !== 'revealed' && (
-        <p className="mt-3 text-sm text-gray-500 text-center">Multiple answers allowed</p>
+        <p className="mt-3 text-sm text-muted text-center">Multiple answers allowed</p>
       )}
     </div>
   )

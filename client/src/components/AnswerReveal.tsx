@@ -19,9 +19,9 @@ export default function AnswerReveal({
     <div className="space-y-4">
       {/* AI Summary */}
       {isLoadingSummary ? (
-        <div className="bg-gradient-to-r from-purple-50 to-indigo-50 rounded-xl p-6 border border-purple-100">
+        <div className="surface p-6 border-accent/15 bg-gradient-to-br from-accent/10 via-surface/70 to-accent2/10">
           <div className="flex items-center gap-2">
-            <svg className="w-5 h-5 text-purple-600 animate-spin" fill="none" viewBox="0 0 24 24">
+            <svg className="w-5 h-5 text-accent animate-spin" fill="none" viewBox="0 0 24 24">
               <circle
                 className="opacity-25"
                 cx="12"
@@ -36,14 +36,14 @@ export default function AnswerReveal({
                 d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
               />
             </svg>
-            <span className="text-purple-700">Generating AI summary...</span>
+            <span className="text-sm font-semibold text-ink">Generating AI summary…</span>
           </div>
         </div>
       ) : summary ? (
-        <div className="bg-gradient-to-r from-purple-50 to-indigo-50 rounded-xl p-6 border border-purple-100">
+        <div className="surface p-6 border-accent/15 bg-gradient-to-br from-accent/10 via-surface/70 to-accent2/10">
           <div className="flex items-center gap-2 mb-3">
             <svg
-              className="w-5 h-5 text-purple-600"
+              className="w-5 h-5 text-accent"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -55,20 +55,16 @@ export default function AnswerReveal({
                 d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"
               />
             </svg>
-            <h3 className="font-semibold text-purple-900">AI Summary</h3>
+            <h3 className="text-sm font-semibold text-ink">AI summary</h3>
           </div>
-          <p className="text-purple-800">{summary}</p>
+          <p className="text-sm text-ink/90">{summary}</p>
         </div>
       ) : null}
 
       {/* Group Answers Button (only for facilitator, only when not yet grouped) */}
       {isFacilitator && !groupedAnswers && onGroupAnswers && (
         <div className="flex justify-center">
-          <button
-            onClick={onGroupAnswers}
-            disabled={isGrouping}
-            className="flex items-center gap-2 px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-400 text-white rounded-lg font-medium transition-colors"
-          >
+          <button onClick={onGroupAnswers} disabled={isGrouping} className="btn-primary px-6 py-3">
             {isGrouping ? (
               <>
                 <svg className="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
@@ -86,7 +82,7 @@ export default function AnswerReveal({
                     d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                   />
                 </svg>
-                Grouping...
+                Grouping…
               </>
             ) : (
               <>
@@ -106,7 +102,7 @@ export default function AnswerReveal({
       )}
 
       {/* Answers - either grouped or flat */}
-      <div className="bg-white rounded-xl shadow-lg p-6">
+      <div className="surface p-6">
         {groupedAnswers ? (
           <GroupedAnswers
             data={groupedAnswers}
@@ -119,13 +115,19 @@ export default function AnswerReveal({
           />
         ) : (
           <>
-            <h3 className="font-semibold text-gray-900 mb-4">All Responses ({answers.length})</h3>
+            <div className="flex items-center justify-between gap-4 mb-4">
+              <h3 className="text-sm font-semibold text-ink">All responses</h3>
+              <span className="badge">{answers.length}</span>
+            </div>
             <div className="space-y-3">
               {answers.map((answer) => (
-                <div key={answer.id} className="p-4 bg-gray-50 rounded-lg border border-gray-100">
-                  <p className="text-gray-800">{answer.text}</p>
+                <div
+                  key={answer.id}
+                  className="rounded-2xl border border-stroke/70 bg-surface2/70 p-4 shadow-inset"
+                >
+                  <p className="text-ink/90">{answer.text}</p>
                   {showNames && answer.participantName && (
-                    <p className="text-sm text-gray-500 mt-2">— {answer.participantName}</p>
+                    <p className="text-sm text-muted mt-2">— {answer.participantName}</p>
                   )}
                 </div>
               ))}

@@ -24,23 +24,23 @@ export default function DraggableAnswer({ answer, showName, isDraggable }: Dragg
     <div
       ref={setNodeRef}
       style={style}
-      className={`p-4 bg-gray-50 rounded-lg border border-gray-100 ${
-        isDragging ? 'shadow-lg opacity-90' : ''
-      } ${isDraggable ? 'cursor-grab active:cursor-grabbing' : ''}`}
+      className={`rounded-2xl border bg-surface2/70 p-4 shadow-inset transition ${
+        isDragging ? 'border-accent/30 shadow-card opacity-95' : 'border-stroke/70'
+      } ${isDraggable ? 'cursor-grab active:cursor-grabbing hover:-translate-y-px' : ''}`}
       {...(isDraggable ? { ...listeners, ...attributes } : {})}
     >
       <div className="flex items-start gap-3">
         {isDraggable && (
-          <div className="flex-shrink-0 pt-1 text-gray-400">
+          <div className="flex-shrink-0 pt-1 text-muted/70">
             <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
               <path d="M7 2a2 2 0 1 0 .001 4.001A2 2 0 0 0 7 2zm0 6a2 2 0 1 0 .001 4.001A2 2 0 0 0 7 8zm0 6a2 2 0 1 0 .001 4.001A2 2 0 0 0 7 14zm6-8a2 2 0 1 0-.001-4.001A2 2 0 0 0 13 6zm0 2a2 2 0 1 0 .001 4.001A2 2 0 0 0 13 8zm0 6a2 2 0 1 0 .001 4.001A2 2 0 0 0 13 14z" />
             </svg>
           </div>
         )}
         <div className="flex-1 min-w-0">
-          <p className="text-gray-800">{answer.text}</p>
+          <p className="text-ink/90">{answer.text}</p>
           {showName && answer.participantName && (
-            <p className="text-sm text-gray-500 mt-2">— {answer.participantName}</p>
+            <p className="text-sm text-muted mt-2">— {answer.participantName}</p>
           )}
         </div>
       </div>

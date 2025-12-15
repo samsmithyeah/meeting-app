@@ -53,16 +53,17 @@ export default function AnswerGroup({
   return (
     <div
       ref={setNodeRef}
-      className={`rounded-xl border-2 transition-colors ${
-        isOver ? 'border-indigo-400 bg-indigo-50' : 'border-gray-200 bg-white'
+      className={`rounded-3xl border-2 transition-colors ${
+        isOver ? 'border-accent/60 bg-accent/5' : 'border-stroke/70 bg-surface/70'
       }`}
     >
       {/* Group Header */}
-      <div className="flex items-center justify-between p-4 border-b border-gray-100">
+      <div className="flex items-center justify-between p-4 border-b border-stroke/70">
         <div className="flex items-center gap-3 flex-1 min-w-0">
           <button
             onClick={() => setIsExpanded(!isExpanded)}
-            className="text-gray-500 hover:text-gray-700"
+            className="btn-ghost px-2 py-2"
+            aria-label={isExpanded ? 'Collapse group' : 'Expand group'}
           >
             <svg
               className={`w-5 h-5 transition-transform ${isExpanded ? 'rotate-90' : ''}`}
@@ -81,25 +82,19 @@ export default function AnswerGroup({
               onChange={(e) => setEditName(e.target.value)}
               onBlur={handleRename}
               onKeyDown={handleKeyDown}
-              className="flex-1 px-2 py-1 border border-indigo-300 rounded focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="input py-2 text-sm"
               autoFocus
             />
           ) : (
-            <h4 className="font-medium text-gray-900 truncate">{group.name}</h4>
+            <h4 className="font-semibold text-ink truncate">{group.name}</h4>
           )}
 
-          <span className="flex-shrink-0 px-2 py-0.5 text-xs font-medium text-gray-600 bg-gray-100 rounded-full">
-            {group.answers.length}
-          </span>
+          <span className="badge flex-shrink-0">{group.answers.length}</span>
         </div>
 
         {isFacilitator && !isEditing && (
           <div className="flex items-center gap-1">
-            <button
-              onClick={startEditing}
-              className="p-1.5 text-gray-400 hover:text-indigo-600 rounded"
-              title="Rename group"
-            >
+            <button onClick={startEditing} className="btn-ghost px-2 py-2" title="Rename group">
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path
                   strokeLinecap="round"
@@ -111,7 +106,7 @@ export default function AnswerGroup({
             </button>
             <button
               onClick={onDelete}
-              className="p-1.5 text-gray-400 hover:text-red-600 rounded"
+              className="btn-ghost px-2 py-2 text-danger hover:bg-danger/10"
               title="Delete group"
             >
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -131,7 +126,7 @@ export default function AnswerGroup({
       {isExpanded && (
         <div className="p-4 space-y-3">
           {group.answers.length === 0 ? (
-            <p className="text-sm text-gray-500 text-center py-4">
+            <p className="text-sm text-muted text-center py-4">
               {isFacilitator ? 'Drag answers here' : 'No answers in this group'}
             </p>
           ) : (

@@ -94,62 +94,88 @@ export default function JoinMeeting() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
-      <div className="max-w-md w-full mx-4">
-        <Link to="/" className="text-indigo-600 hover:text-indigo-800 mb-6 inline-block">
-          &larr; Back to Home
+    <div className="min-h-screen">
+      <div className="container-app py-8 sm:py-10">
+        <Link to="/" className="btn-ghost px-3">
+          <span aria-hidden>&larr;</span> Home
         </Link>
 
-        <div className="bg-white rounded-xl shadow-lg p-8">
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">Join a Meeting</h1>
-          <p className="text-gray-600 mb-6">Enter the code shared by your facilitator</p>
-
-          {error && <div className="bg-red-50 text-red-600 p-3 rounded-lg mb-4">{error}</div>}
-
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label htmlFor="code" className="block text-sm font-medium text-gray-700 mb-1">
-                Meeting Code
-              </label>
-              <input
-                type="text"
-                id="code"
-                value={code}
-                onChange={handleCodeChange}
-                maxLength={6}
-                className="w-full px-4 py-3 text-2xl text-center tracking-widest font-mono border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 uppercase"
-                placeholder="ABC123"
-              />
+        <div className="mt-6 mx-auto w-full max-w-lg">
+          <div className="surface p-6 sm:p-8">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-ink">
+                  Join a meeting
+                </h1>
+                <p className="mt-1 text-sm text-muted">
+                  Enter the code shared by your facilitator to hop in instantly.
+                </p>
+              </div>
+              <span className="badge">Participant</span>
             </div>
 
-            {meetingInfo && !meetingInfo.isFacilitator && (
-              <div className="bg-green-50 text-green-700 p-3 rounded-lg">
-                Found: <strong>{meetingInfo.title}</strong>
+            {error && (
+              <div className="mt-6 toast border-danger/20 bg-danger/5 text-danger">
+                <p className="text-sm font-medium">{error}</p>
               </div>
             )}
 
-            <div>
-              <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
-                Your Name
-              </label>
-              <input
-                type="text"
-                id="name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                placeholder="Enter your name"
-              />
-            </div>
+            <form onSubmit={handleSubmit} className="mt-6 space-y-4">
+              <div>
+                <label htmlFor="code" className="block text-sm font-semibold text-ink">
+                  Meeting code
+                </label>
+                <p className="mt-1 text-sm text-muted">6 characters (letters + numbers).</p>
+                <input
+                  type="text"
+                  id="code"
+                  value={code}
+                  onChange={handleCodeChange}
+                  maxLength={6}
+                  inputMode="text"
+                  autoCapitalize="characters"
+                  autoComplete="off"
+                  className="input mt-2 text-center text-2xl tracking-[0.35em] font-mono uppercase"
+                  placeholder="ABC123"
+                />
+              </div>
 
-            <button
-              type="submit"
-              disabled={isJoining || code.length !== 6 || !name.trim()}
-              className="w-full bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-400 text-white font-semibold py-3 px-6 rounded-lg transition-colors"
-            >
-              {isJoining ? 'Joining...' : 'Join Meeting'}
-            </button>
-          </form>
+              {meetingInfo && !meetingInfo.isFacilitator && (
+                <div className="rounded-2xl border border-success/25 bg-success/10 p-4 text-success">
+                  <p className="text-sm">
+                    Found <span className="font-semibold">{meetingInfo.title}</span>
+                  </p>
+                </div>
+              )}
+
+              <div>
+                <label htmlFor="name" className="block text-sm font-semibold text-ink">
+                  Your name
+                </label>
+                <input
+                  type="text"
+                  id="name"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  className="input mt-2"
+                  placeholder="Enter your name"
+                  autoComplete="name"
+                />
+              </div>
+
+              <button
+                type="submit"
+                disabled={isJoining || code.length !== 6 || !name.trim()}
+                className="btn-primary w-full py-3"
+              >
+                {isJoining ? 'Joining…' : 'Join meeting'}
+              </button>
+            </form>
+          </div>
+
+          <p className="mt-5 text-center text-sm text-muted">
+            Tip: If you were given a facilitator code, you’ll be redirected automatically.
+          </p>
         </div>
       </div>
     </div>

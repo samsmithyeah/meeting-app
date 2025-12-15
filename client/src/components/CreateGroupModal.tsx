@@ -28,16 +28,21 @@ export default function CreateGroupModal({ isOpen, onClose, onCreate }: CreateGr
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       {/* Backdrop */}
-      <div className="absolute inset-0 bg-black/50" onClick={handleClose} />
+      <div className="absolute inset-0 bg-ink/40 backdrop-blur-sm" onClick={handleClose} />
 
       {/* Modal */}
-      <div className="relative bg-white rounded-xl shadow-xl p-6 w-full max-w-md mx-4">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Create New Group</h3>
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-label="Create new group"
+        className="relative surface-solid p-6 w-full max-w-md mx-4 animate-fade-up"
+      >
+        <h3 className="text-lg font-semibold tracking-tight text-ink mb-4">Create new group</h3>
 
         <form onSubmit={handleSubmit}>
           <div className="mb-4">
-            <label htmlFor="group-name" className="block text-sm font-medium text-gray-700 mb-1">
-              Group Name
+            <label htmlFor="group-name" className="block text-sm font-semibold text-ink">
+              Group name
             </label>
             <input
               id="group-name"
@@ -45,24 +50,16 @@ export default function CreateGroupModal({ isOpen, onClose, onCreate }: CreateGr
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="e.g., Technical Issues"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+              className="input mt-2"
               autoFocus
             />
           </div>
 
           <div className="flex justify-end gap-3">
-            <button
-              type="button"
-              onClick={handleClose}
-              className="px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg font-medium"
-            >
+            <button type="button" onClick={handleClose} className="btn-secondary">
               Cancel
             </button>
-            <button
-              type="submit"
-              disabled={!name.trim()}
-              className="px-4 py-2 text-white bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-400 rounded-lg font-medium"
-            >
+            <button type="submit" disabled={!name.trim()} className="btn-primary">
               Create
             </button>
           </div>

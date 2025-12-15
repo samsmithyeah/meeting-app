@@ -36,21 +36,19 @@ function UngroupedSection({
   return (
     <div
       ref={setNodeRef}
-      className={`rounded-xl border-2 border-dashed transition-colors ${
-        isOver ? 'border-gray-400 bg-gray-100' : 'border-gray-300 bg-gray-50'
+      className={`rounded-3xl border-2 border-dashed transition-colors ${
+        isOver ? 'border-accent/50 bg-accent/5' : 'border-stroke/80 bg-surface2/70'
       }`}
     >
-      <div className="p-4 border-b border-gray-200">
+      <div className="p-4 border-b border-stroke/70">
         <div className="flex items-center gap-2">
-          <h4 className="font-medium text-gray-700">Ungrouped</h4>
-          <span className="px-2 py-0.5 text-xs font-medium text-gray-600 bg-gray-200 rounded-full">
-            {answers.length}
-          </span>
+          <h4 className="font-semibold text-ink">Ungrouped</h4>
+          <span className="badge">{answers.length}</span>
         </div>
       </div>
       <div className="p-4 space-y-3">
         {answers.length === 0 ? (
-          <p className="text-sm text-gray-500 text-center py-4">
+          <p className="text-sm text-muted text-center py-4">
             {isFacilitator ? 'Drag answers here to ungroup them' : 'No ungrouped answers'}
           </p>
         ) : (
@@ -129,12 +127,12 @@ export default function GroupedAnswers({
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h3 className="font-semibold text-gray-900">Grouped Responses ({totalAnswers})</h3>
+        <div className="flex items-center gap-3">
+          <h3 className="text-sm font-semibold text-ink">Grouped responses</h3>
+          <span className="badge">{totalAnswers}</span>
+        </div>
         {isFacilitator && (
-          <button
-            onClick={() => setShowCreateModal(true)}
-            className="flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50 rounded-lg"
-          >
+          <button onClick={() => setShowCreateModal(true)} className="btn-secondary px-3 py-2">
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path
                 strokeLinecap="round"
@@ -143,7 +141,7 @@ export default function GroupedAnswers({
                 d="M12 4v16m8-8H4"
               />
             </svg>
-            New Group
+            New group
           </button>
         )}
       </div>
@@ -175,7 +173,7 @@ export default function GroupedAnswers({
         {/* Drag overlay for visual feedback */}
         <DragOverlay>
           {activeAnswer && (
-            <div className="opacity-80">
+            <div className="opacity-90">
               <DraggableAnswer answer={activeAnswer} showName={showNames} isDraggable={false} />
             </div>
           )}

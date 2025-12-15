@@ -125,7 +125,16 @@ export default function FacilitatorSession() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="text-gray-500">Loading...</div>
+        <div className="surface p-8 w-full max-w-lg mx-4">
+          <div className="skeleton h-5 w-52" />
+          <div className="mt-6 grid grid-cols-2 gap-3">
+            <div className="skeleton h-20" />
+            <div className="skeleton h-20" />
+            <div className="skeleton h-20" />
+            <div className="skeleton h-20" />
+          </div>
+          <p className="mt-6 text-sm text-muted">Loading facilitator view…</p>
+        </div>
       </div>
     )
   }
@@ -133,7 +142,10 @@ export default function FacilitatorSession() {
   if (fetchError) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="text-red-500">{fetchError}</div>
+        <div className="surface p-8 w-full max-w-md mx-4">
+          <p className="text-sm font-semibold text-ink">Unable to load meeting</p>
+          <p className="mt-1 text-sm text-muted">{fetchError}</p>
+        </div>
       </div>
     )
   }
@@ -141,7 +153,10 @@ export default function FacilitatorSession() {
   if (!meeting) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="text-gray-500">Meeting not found</div>
+        <div className="surface p-8 w-full max-w-md mx-4">
+          <p className="text-sm font-semibold text-ink">Meeting not found</p>
+          <p className="mt-1 text-sm text-muted">Double-check the code, then try again.</p>
+        </div>
       </div>
     )
   }
@@ -151,15 +166,19 @@ export default function FacilitatorSession() {
     : true
 
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen">
       {/* Dismissible error notification */}
       {socketError && (
-        <div className="fixed top-4 right-4 z-50 max-w-md bg-red-50 border border-red-200 rounded-lg shadow-lg p-4">
+        <div className="fixed top-4 right-4 z-50 max-w-md toast border-danger/20 bg-danger/5 text-danger">
           <div className="flex items-start gap-3">
             <div className="flex-1">
-              <p className="text-sm text-red-800">{socketError}</p>
+              <p className="text-sm font-medium">{socketError}</p>
             </div>
-            <button onClick={() => setSocketError('')} className="text-red-500 hover:text-red-700">
+            <button
+              onClick={() => setSocketError('')}
+              className="btn-ghost px-2 py-2 text-danger hover:bg-danger/10"
+              aria-label="Dismiss error"
+            >
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path
                   strokeLinecap="round"
@@ -174,174 +193,235 @@ export default function FacilitatorSession() {
       )}
 
       {/* Header */}
-      <header className="bg-white shadow-sm">
-        <div className="max-w-4xl mx-auto px-4 py-4 flex justify-between items-center">
-          <div>
-            <h1 className="text-xl font-bold text-gray-900">{meeting.title}</h1>
-            <p className="text-sm text-gray-500">Facilitator View</p>
-          </div>
-          <div className="flex items-center gap-4">
-            <div className="text-sm">
-              <span className="font-medium">{participantCount}</span>
-              <span className="text-gray-500"> participants</span>
+      <header className="sticky top-0 z-40 border-b border-stroke/60 bg-surface/70 backdrop-blur">
+        <div className="container-app py-4">
+          <div className="flex items-center justify-between gap-4">
+            <div className="min-w-0">
+              <h1 className="truncate text-base sm:text-lg font-semibold tracking-tight text-ink">
+                {meeting.title}
+              </h1>
+              <p className="text-sm text-muted">Facilitator view</p>
             </div>
-            <button
-              onClick={copyJoinLink}
-              className="bg-gray-100 hover:bg-gray-200 px-3 py-1.5 rounded text-sm font-medium transition-colors"
-            >
-              {copied ? 'Copied!' : `Share: ${meeting.participantCode}`}
-            </button>
+
+            <div className="flex items-center gap-3">
+              <span className="badge">
+                {participantCount} {participantCount === 1 ? 'participant' : 'participants'}
+              </span>
+              <button onClick={copyJoinLink} className="btn-secondary px-3 py-2">
+                <span className="font-mono tracking-widest">{meeting.participantCode}</span>
+                <span className="text-muted">{copied ? 'Copied' : 'Share'}</span>
+              </button>
+            </div>
           </div>
         </div>
       </header>
 
-      <main className="max-w-4xl mx-auto px-4 py-8">
+      <main className="container-app py-6 sm:py-8">
         {/* Meeting not started */}
         {meeting.status === 'draft' && (
-          <div className="bg-white rounded-xl shadow-lg p-8 text-center">
-            <h2 className="text-2xl font-bold mb-4">Ready to Start?</h2>
-            <p className="text-gray-600">Scan the QR code or enter the code to join</p>
-            <QRCodeDisplay
-              url={`${window.location.origin}/join/${meeting.participantCode}`}
-              participantCode={meeting.participantCode}
-            />
-            <div className="flex justify-center gap-4">
-              <button
-                onClick={copyJoinLink}
-                className="bg-gray-100 hover:bg-gray-200 px-6 py-3 rounded-lg font-medium transition-colors"
-              >
-                Copy Join Link
-              </button>
-              <button
-                onClick={startMeeting}
-                className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-lg font-medium transition-colors"
-              >
-                Start Meeting
-              </button>
+          <div className="grid gap-6 lg:grid-cols-12 items-start">
+            <div className="lg:col-span-5">
+              <div className="surface p-6 sm:p-8">
+                <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight text-ink">
+                  Ready to start?
+                </h2>
+                <p className="mt-2 text-sm text-muted">
+                  Participants can scan the QR code or join with the code below.
+                </p>
+
+                <div className="mt-6 space-y-3">
+                  <div className="rounded-2xl border border-stroke/70 bg-surface2/70 p-4 shadow-inset">
+                    <p className="text-xs font-semibold text-muted">Join link</p>
+                    <p className="mt-1 text-sm text-ink/90 break-all">
+                      {window.location.origin}/join/{meeting.participantCode}
+                    </p>
+                    <button onClick={copyJoinLink} className="btn-secondary mt-3 w-full">
+                      {copied ? 'Copied' : 'Copy join link'}
+                    </button>
+                  </div>
+
+                  <div className="rounded-2xl border border-stroke/70 bg-gradient-to-br from-accent/10 via-surface2/70 to-accent2/10 p-4 shadow-inset">
+                    <p className="text-xs font-semibold text-muted">Room code</p>
+                    <p className="mt-1 font-mono text-3xl font-semibold tracking-[0.25em] text-ink">
+                      {meeting.participantCode}
+                    </p>
+                  </div>
+                </div>
+
+                <button onClick={startMeeting} className="btn-primary mt-6 w-full py-3">
+                  Start meeting
+                </button>
+              </div>
+            </div>
+
+            <div className="lg:col-span-7">
+              <div className="surface p-6 sm:p-8">
+                <div className="flex items-center justify-between gap-4">
+                  <div>
+                    <p className="text-sm font-semibold text-ink">Projectable QR</p>
+                    <p className="mt-1 text-sm text-muted">Click to enlarge for screens.</p>
+                  </div>
+                  <span className="badge">Scan to join</span>
+                </div>
+                <QRCodeDisplay
+                  url={`${window.location.origin}/join/${meeting.participantCode}`}
+                  participantCode={meeting.participantCode}
+                />
+              </div>
             </div>
           </div>
         )}
 
         {/* Active meeting */}
         {meeting.status === 'active' && currentQuestion && (
-          <div className="space-y-6">
-            {/* Progress */}
-            <div className="flex items-center justify-between text-sm text-gray-500">
-              <span>
-                Question {currentQuestionIndex + 1} of {meeting.questions?.length || 0}
-              </span>
-              <div className="flex gap-1">
-                {meeting.questions?.map((_, i) => (
-                  <div
-                    key={i}
-                    className={`w-8 h-1 rounded ${
-                      i < currentQuestionIndex
-                        ? 'bg-green-500'
-                        : i === currentQuestionIndex
-                          ? 'bg-indigo-500'
-                          : 'bg-gray-300'
-                    }`}
-                  />
-                ))}
-              </div>
-            </div>
+          <div className="grid gap-6 lg:grid-cols-12 items-start">
+            <aside className="lg:col-span-4 space-y-4 lg:sticky lg:top-24">
+              <div className="surface p-5 sm:p-6">
+                <div className="flex items-center justify-between gap-4">
+                  <p className="text-sm font-semibold text-ink">Run of show</p>
+                  <span className="badge">
+                    Q {currentQuestionIndex + 1}/{meeting.questions?.length || 0}
+                  </span>
+                </div>
 
-            {/* Question */}
-            <QuestionCard
-              question={currentQuestion}
-              status={sessionStatus}
-              answeredCount={answeredCount}
-              totalCount={participantCount}
-              timerEnd={timerEnd}
-              isFacilitator={true}
-            />
-
-            {/* Placeholder cards while answering */}
-            {sessionStatus === 'answering' && answerCount > 0 && (
-              <div className="bg-white rounded-xl shadow-lg p-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Answers Received</h3>
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-                  {Array.from({ length: answerCount }).map((_, i) => (
+                <div className="mt-4 flex gap-1.5">
+                  {meeting.questions?.map((_, i) => (
                     <div
                       key={i}
-                      className="h-16 bg-gradient-to-br from-indigo-50 to-purple-50 border border-indigo-100 rounded-lg flex items-center justify-center animate-pulse"
-                    >
-                      <svg
-                        className="w-6 h-6 text-indigo-300"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
-                        />
-                      </svg>
-                    </div>
+                      className={`h-1.5 flex-1 rounded-full transition-colors ${
+                        i < currentQuestionIndex
+                          ? 'bg-success/70'
+                          : i === currentQuestionIndex
+                            ? 'bg-accent/80'
+                            : 'bg-stroke/80'
+                      }`}
+                    />
                   ))}
                 </div>
-              </div>
-            )}
 
-            {/* Revealed Answers */}
-            {sessionStatus === 'revealed' && revealedAnswers && (
-              <AnswerReveal
-                answers={revealedAnswers}
-                summary={summary}
-                isLoadingSummary={isLoadingSummary}
-                showNames={meeting.showParticipantNames ?? true}
-                groupedAnswers={groupedAnswers}
-                isGrouping={isGrouping}
-                isFacilitator={true}
-                onGroupAnswers={handleGroupAnswers}
-                onMoveAnswer={handleMoveAnswer}
-                onCreateGroup={handleCreateGroup}
-                onRenameGroup={handleRenameGroup}
-                onDeleteGroup={handleDeleteGroup}
-              />
-            )}
+                <div className="mt-5 grid grid-cols-2 gap-3">
+                  <div className="rounded-2xl border border-stroke/70 bg-surface2/70 p-3 shadow-inset">
+                    <p className="text-xs font-semibold text-muted">Participants</p>
+                    <p className="mt-1 text-lg font-semibold tracking-tight text-ink">
+                      {participantCount}
+                    </p>
+                  </div>
+                  <div className="rounded-2xl border border-stroke/70 bg-surface2/70 p-3 shadow-inset">
+                    <p className="text-xs font-semibold text-muted">Answered</p>
+                    <p className="mt-1 text-lg font-semibold tracking-tight text-ink">
+                      {answeredCount}/{participantCount}
+                    </p>
+                  </div>
+                </div>
 
-            {/* Controls */}
-            <div className="flex justify-center gap-4">
-              {sessionStatus === 'waiting' && (
-                <button
-                  onClick={handleStartQuestion}
-                  disabled={participantCount === 0}
-                  className="bg-indigo-600 hover:bg-indigo-700 disabled:bg-gray-400 text-white px-8 py-3 rounded-lg font-medium transition-colors"
-                >
-                  Start Question
-                </button>
-              )}
-
-              {sessionStatus === 'answering' && (
-                <button
-                  onClick={handleRevealAnswers}
-                  className="bg-green-600 hover:bg-green-700 text-white px-8 py-3 rounded-lg font-medium transition-colors"
-                >
-                  Reveal Answers ({answeredCount}/{participantCount})
-                </button>
-              )}
-
-              {sessionStatus === 'revealed' && (
-                <>
-                  {!isLastQuestion ? (
+                <div className="mt-5 space-y-2">
+                  {sessionStatus === 'waiting' && (
                     <button
-                      onClick={handleNextQuestion}
-                      className="bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-3 rounded-lg font-medium transition-colors"
+                      onClick={handleStartQuestion}
+                      disabled={participantCount === 0}
+                      className="btn-primary w-full py-3"
                     >
-                      Next Question
-                    </button>
-                  ) : (
-                    <button
-                      onClick={handleEndMeeting}
-                      className="bg-gray-600 hover:bg-gray-700 text-white px-8 py-3 rounded-lg font-medium transition-colors"
-                    >
-                      End Meeting
+                      Start question
                     </button>
                   )}
-                </>
+
+                  {sessionStatus === 'answering' && (
+                    <button
+                      onClick={handleRevealAnswers}
+                      className="btn w-full py-3 bg-success text-white hover:bg-success/90 shadow-card"
+                    >
+                      Reveal answers
+                      <span className="font-mono text-white/90">
+                        {answeredCount}/{participantCount}
+                      </span>
+                    </button>
+                  )}
+
+                  {sessionStatus === 'revealed' && (
+                    <>
+                      {!isLastQuestion ? (
+                        <button onClick={handleNextQuestion} className="btn-primary w-full py-3">
+                          Next question
+                        </button>
+                      ) : (
+                        <button onClick={handleEndMeeting} className="btn-danger w-full py-3">
+                          End meeting
+                        </button>
+                      )}
+                    </>
+                  )}
+                </div>
+
+                <div className="mt-5 rounded-2xl border border-stroke/70 bg-surface2/70 p-4 shadow-inset">
+                  <p className="text-xs font-semibold text-muted">Share</p>
+                  <div className="mt-2 flex items-center gap-2">
+                    <span className="pill font-mono tracking-widest">
+                      {meeting.participantCode}
+                    </span>
+                    <button onClick={copyJoinLink} className="btn-secondary px-3 py-2">
+                      {copied ? 'Copied' : 'Copy link'}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </aside>
+
+            <div className="lg:col-span-8 space-y-5">
+              <QuestionCard
+                question={currentQuestion}
+                status={sessionStatus}
+                answeredCount={answeredCount}
+                totalCount={participantCount}
+                timerEnd={timerEnd}
+                isFacilitator={true}
+              />
+
+              {sessionStatus === 'answering' && answerCount > 0 && (
+                <div className="surface p-6">
+                  <div className="flex items-center justify-between gap-4">
+                    <h3 className="text-sm font-semibold text-ink">Responses coming in</h3>
+                    <span className="badge">{answerCount}</span>
+                  </div>
+                  <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                    {Array.from({ length: answerCount }).map((_, i) => (
+                      <div
+                        key={i}
+                        className="h-16 rounded-2xl border border-stroke/70 bg-gradient-to-br from-accent/10 via-surface2/70 to-accent2/10 flex items-center justify-center"
+                      >
+                        <svg
+                          className="w-6 h-6 text-muted/60 animate-soft-pulse"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
+                          />
+                        </svg>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {sessionStatus === 'revealed' && revealedAnswers && (
+                <AnswerReveal
+                  answers={revealedAnswers}
+                  summary={summary}
+                  isLoadingSummary={isLoadingSummary}
+                  showNames={meeting.showParticipantNames ?? true}
+                  groupedAnswers={groupedAnswers}
+                  isGrouping={isGrouping}
+                  isFacilitator={true}
+                  onGroupAnswers={handleGroupAnswers}
+                  onMoveAnswer={handleMoveAnswer}
+                  onCreateGroup={handleCreateGroup}
+                  onRenameGroup={handleRenameGroup}
+                  onDeleteGroup={handleDeleteGroup}
+                />
               )}
             </div>
           </div>
