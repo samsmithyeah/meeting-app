@@ -132,3 +132,24 @@ BEGIN
   );
 END;
 $$;
+
+-- Answer groups table (for grouping similar responses)
+CREATE TABLE answer_groups (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  question_id UUID REFERENCES questions(id) ON DELETE CASCADE NOT NULL,
+  name VARCHAR(255) NOT NULL,
+  display_order INTEGER NOT NULL DEFAULT 0,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Answer-to-group mapping table
+CREATE TABLE answer_group_mappings (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  answer_id UUID REFERENCES answers(id) ON DELETE CASCADE NOT NULL UNIQUE,
+  group_id UUID REFERENCES answer_groups(id) ON DELETE CASCADE NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Indexes for answer grouping
+CREATE INDEX idx_answer_groups_question_id ON answer_groups(question_id);
+CREATE INDEX idx_answer_group_mappings_group_id ON answer_group_mappings(group_id);

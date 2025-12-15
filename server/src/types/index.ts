@@ -43,6 +43,45 @@ export interface Answer {
   participants?: Pick<Participant, 'id' | 'name'>
 }
 
+export interface AnswerGroup {
+  id: string
+  question_id: string
+  name: string
+  display_order: number
+  created_at: string
+}
+
+export interface AnswerGroupMapping {
+  id: string
+  answer_id: string
+  group_id: string
+  created_at: string
+}
+
+// Grouped answers types for socket/API communication
+export interface GroupWithAnswers {
+  id: string
+  name: string
+  displayOrder: number
+  answers: { id: string; text: string; participantName: string | null }[]
+}
+
+export interface GroupedAnswersData {
+  groups: GroupWithAnswers[]
+  ungrouped: { id: string; text: string; participantName: string | null }[]
+}
+
+// AI grouping result types
+export interface AnswerGroupingResult {
+  groupName: string
+  answerIds: string[]
+}
+
+export interface GroupAnswersAIResult {
+  groups: AnswerGroupingResult[]
+  ungroupedIds: string[]
+}
+
 // Session state (Redis)
 export interface SessionState {
   status: 'waiting' | 'answering' | 'revealed'
@@ -64,22 +103,31 @@ export interface ServerToClientEvents {
     allowMultipleAnswers: boolean | undefined
     timerEnd: number | null
   }) => void
-  'answer-received': () => void
+  'answer-received': (data: { answer: { id: string; text: string } }) => void
+  'answer-updated': (data: { answer: { id: string; text: string } }) => void
+  'answer-deleted': (data: { answerId: string }) => void
   'answer-submitted': (data: {
     answeredCount: number
     totalCount: number
+    answerCount: number
     allAnswered: boolean
   }) => void
   'answers-revealed': (data: {
     questionId: string
     answers: { id: string; text: string; participantName: string | null }[]
-    summary: string | null
   }) => void
+  'summary-ready': (data: { questionId: string; summary: string }) => void
   'next-question': (data: { questionIndex: number }) => void
   'meeting-started': (data: { meetingId: string }) => void
   'meeting-ended': () => void
   error: (data: { message: string }) => void
+  // Grouping events
+  'grouping-started': (data: { questionId: string }) => void
+  'answers-grouped': (data: { questionId: string; groupedAnswers: GroupedAnswersData }) => void
+  'groups-updated': (data: { questionId: string; groupedAnswers: GroupedAnswersData }) => void
 }
+
+export type UpdateGroupAction = 'move-answer' | 'create-group' | 'rename-group' | 'delete-group'
 
 export interface ClientToServerEvents {
   'facilitator-join': (data: { meetingId: string }) => void
@@ -89,14 +137,31 @@ export interface ClientToServerEvents {
     questionId: string
     timeLimitSeconds?: number
   }) => void
-  'submit-answer': (data: {
+  'submit-answer': (data: { meetingId: string; questionId: string; text: string }) => void
+  'edit-answer': (data: {
     meetingId: string
     questionId: string
-    answers: string | string[]
+    answerId: string
+    text: string
   }) => void
+  'delete-answer': (data: { meetingId: string; questionId: string; answerId: string }) => void
   'reveal-answers': (data: { meetingId: string; questionId: string }) => void
   'next-question': (data: { meetingId: string; nextQuestionIndex: number }) => void
   'end-meeting': (data: { meetingId: string }) => void
+  // Grouping events
+  'group-answers': (data: { meetingId: string; questionId: string }) => void
+  'update-group': (data: {
+    meetingId: string
+    questionId: string
+    action: UpdateGroupAction
+    payload: {
+      answerId?: string
+      targetGroupId?: string | null
+      groupId?: string
+      name?: string
+      answerIds?: string[]
+    }
+  }) => void
 }
 
 export interface InterServerEvents {

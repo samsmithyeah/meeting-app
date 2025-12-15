@@ -31,15 +31,16 @@ export default function ParticipantSession() {
   const {
     sessionStatus,
     currentQuestion,
-    hasAnswered,
+    myAnswers,
     revealedAnswers,
-    summary,
     timerEnd,
     answeredCount,
     totalCount,
     error: socketError,
     meetingStatus,
-    submitAnswer
+    submitAnswer,
+    editAnswer,
+    deleteAnswer
   } = useParticipantSocket(meeting, participantName)
 
   const error = fetchError || socketError
@@ -139,32 +140,17 @@ export default function ParticipantSession() {
               isFacilitator={false}
             />
 
-            {!hasAnswered ? (
-              <AnswerInput
-                allowMultiple={currentQuestion.allowMultipleAnswers ?? false}
-                onSubmit={submitAnswer}
-              />
-            ) : (
-              <div className="bg-green-50 rounded-xl p-6 text-center">
-                <div className="w-12 h-12 bg-green-100 rounded-full mx-auto flex items-center justify-center mb-3">
-                  <svg
-                    className="w-6 h-6 text-green-600"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M5 13l4 4L19 7"
-                    />
-                  </svg>
-                </div>
-                <p className="font-medium text-green-800">Answer submitted!</p>
-                <p className="text-sm text-green-600 mt-1">
-                  Waiting for everyone to finish ({answeredCount}/{totalCount})
-                </p>
+            <AnswerInput
+              allowMultiple={currentQuestion.allowMultipleAnswers ?? false}
+              myAnswers={myAnswers}
+              onSubmit={submitAnswer}
+              onEdit={editAnswer}
+              onDelete={deleteAnswer}
+            />
+
+            {myAnswers.length > 0 && (
+              <div className="text-center text-sm text-gray-500">
+                {answeredCount}/{totalCount} participants have answered
               </div>
             )}
           </div>
@@ -182,8 +168,8 @@ export default function ParticipantSession() {
             )}
             <AnswerReveal
               answers={revealedAnswers}
-              summary={summary}
               showNames={meeting.showParticipantNames ?? true}
+              isFacilitator={false}
             />
             <div className="bg-blue-50 rounded-xl p-4 text-center">
               <p className="text-blue-800">Waiting for facilitator to continue...</p>
