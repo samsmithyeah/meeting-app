@@ -1,19 +1,32 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useParticipantSocket } from '../hooks/useParticipantSocket'
+import { useMeeting } from '../hooks/useMeeting'
 import QuestionCard from '../components/QuestionCard'
 import AnswerInput from '../components/AnswerInput'
 import AnswerReveal from '../components/AnswerReveal'
-import type { Meeting } from '../types'
 
 export default function ParticipantSession() {
   const { code } = useParams<{ code: string }>()
   const navigate = useNavigate()
 
-  const [meeting, setMeeting] = useState<Meeting | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [fetchError, setFetchError] = useState('')
   const [participantName, setParticipantName] = useState('')
+
+  // Get participant name from session storage
+  useEffect(() => {
+    const name = sessionStorage.getItem('participantName')
+    if (!name) {
+      navigate(`/join/${code}`)
+      return
+    }
+    setParticipantName(name)
+  }, [code, navigate])
+
+  const {
+    meeting,
+    loading,
+    error: fetchError
+  } = useMeeting(code, { expectedRole: 'participant', waitFor: !!participantName })
 
   const {
     sessionStatus,
@@ -28,44 +41,6 @@ export default function ParticipantSession() {
     meetingStatus,
     submitAnswer
   } = useParticipantSocket(meeting, participantName)
-
-  // Get participant name from session storage
-  useEffect(() => {
-    const name = sessionStorage.getItem('participantName')
-    if (!name) {
-      navigate(`/join/${code}`)
-      return
-    }
-    setParticipantName(name)
-  }, [code, navigate])
-
-  // Fetch meeting data
-  useEffect(() => {
-    const fetchMeeting = async () => {
-      try {
-        const response = await fetch(`/api/meetings/code/${code}`)
-        if (!response.ok) {
-          throw new Error('Meeting not found')
-        }
-        const data: Meeting = await response.json()
-
-        if (data.isFacilitator) {
-          navigate(`/facilitate/${code}`)
-          return
-        }
-
-        setMeeting(data)
-        setLoading(false)
-      } catch (err) {
-        setFetchError(err instanceof Error ? err.message : 'Failed to load meeting')
-        setLoading(false)
-      }
-    }
-
-    if (participantName) {
-      fetchMeeting()
-    }
-  }, [code, navigate, participantName])
 
   const error = fetchError || socketError
   const currentMeetingStatus = meetingStatus || meeting?.status

@@ -18,14 +18,18 @@ export default function JoinMeeting() {
         if (response.ok) {
           const data: Meeting = await response.json()
           setMeetingInfo(data)
+          setError('')
 
           // If this is a facilitator code, redirect to facilitator view
           if (data.isFacilitator) {
             navigate(`/facilitate/${meetingCode}`)
           }
+        } else {
+          setMeetingInfo(null)
         }
       } catch {
-        // Silently fail - will show error on join attempt
+        setMeetingInfo(null)
+        setError('Unable to connect. Please check your internet connection.')
       }
     },
     [navigate]

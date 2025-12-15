@@ -42,6 +42,20 @@ async function verifyFacilitator(meetingId: string, facilitatorCode: string): Pr
   return data?.facilitator_code === facilitatorCode
 }
 
+// Helper to extract facilitator code from Authorization header or body
+function getFacilitatorCode(req: Request): string | undefined {
+  // Check Authorization header first (Bearer token)
+  const authHeader = req.headers.authorization
+  if (authHeader?.startsWith('Bearer ')) {
+    return authHeader.slice(7)
+  }
+  // Fall back to body or query param
+  return (
+    (req.body as { facilitatorCode?: string })?.facilitatorCode ||
+    (req.query.facilitatorCode as string | undefined)
+  )
+}
+
 // Helper to fetch meeting with questions
 async function getMeetingWithQuestions(meetingId: string) {
   const { data: meeting, error } = await supabase
@@ -180,8 +194,8 @@ router.put(
   async (req: Request<{ id: string }, object, UpdateMeetingBody>, res: Response) => {
     try {
       const { id } = req.params
-      const { facilitatorCode, title, showParticipantNames, status, currentQuestionIndex } =
-        req.body
+      const { title, showParticipantNames, status, currentQuestionIndex } = req.body
+      const facilitatorCode = getFacilitatorCode(req)
 
       // Verify facilitator authorization
       if (!facilitatorCode || !(await verifyFacilitator(id, facilitatorCode))) {
@@ -218,7 +232,7 @@ router.put(
 router.post('/:id/start', async (req: AppRequest, res: Response) => {
   try {
     const { id } = req.params
-    const { facilitatorCode } = req.body as { facilitatorCode?: string }
+    const facilitatorCode = getFacilitatorCode(req)
 
     // Verify facilitator authorization
     if (!facilitatorCode || !(await verifyFacilitator(id, facilitatorCode))) {
@@ -255,7 +269,7 @@ router.post('/:id/start', async (req: AppRequest, res: Response) => {
 router.post('/:id/end', async (req: AppRequest, res: Response) => {
   try {
     const { id } = req.params
-    const { facilitatorCode } = req.body as { facilitatorCode?: string }
+    const facilitatorCode = getFacilitatorCode(req)
 
     // Verify facilitator authorization
     if (!facilitatorCode || !(await verifyFacilitator(id, facilitatorCode))) {
@@ -297,7 +311,8 @@ router.post(
   async (req: Request<{ id: string }, object, AddQuestionsBody>, res: Response) => {
     try {
       const { id } = req.params
-      const { facilitatorCode, questions } = req.body
+      const { questions } = req.body
+      const facilitatorCode = getFacilitatorCode(req)
 
       // Verify facilitator authorization
       if (!facilitatorCode || !(await verifyFacilitator(id, facilitatorCode))) {
@@ -345,7 +360,7 @@ router.post(
 router.get('/:id/participants', async (req: Request<{ id: string }>, res: Response) => {
   try {
     const { id } = req.params
-    const facilitatorCode = req.query.facilitatorCode as string | undefined
+    const facilitatorCode = getFacilitatorCode(req)
 
     // Verify facilitator authorization
     if (!facilitatorCode || !(await verifyFacilitator(id, facilitatorCode))) {

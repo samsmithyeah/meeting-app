@@ -4,6 +4,17 @@ import { summarizeAnswers } from '../services/ai.js'
 
 const router = Router()
 
+// Helper to extract facilitator code from Authorization header or body
+function getFacilitatorCode(req: Request): string | undefined {
+  // Check Authorization header first (Bearer token)
+  const authHeader = req.headers.authorization
+  if (authHeader?.startsWith('Bearer ')) {
+    return authHeader.slice(7)
+  }
+  // Fall back to body
+  return (req.body as { facilitatorCode?: string })?.facilitatorCode
+}
+
 // Helper to verify facilitator authorization for a question
 async function verifyQuestionFacilitator(
   questionId: string,
@@ -82,7 +93,8 @@ router.put(
   async (req: Request<{ id: string }, object, UpdateQuestionBody>, res: Response) => {
     try {
       const { id } = req.params
-      const { facilitatorCode, text, allowMultipleAnswers, timeLimitSeconds, status } = req.body
+      const { text, allowMultipleAnswers, timeLimitSeconds, status } = req.body
+      const facilitatorCode = getFacilitatorCode(req)
 
       // Verify facilitator authorization
       if (!facilitatorCode || !(await verifyQuestionFacilitator(id, facilitatorCode))) {
@@ -118,7 +130,7 @@ router.put(
 router.delete('/:id', async (req: Request<{ id: string }>, res: Response) => {
   try {
     const { id } = req.params
-    const { facilitatorCode } = req.body as { facilitatorCode?: string }
+    const facilitatorCode = getFacilitatorCode(req)
 
     // Verify facilitator authorization
     if (!facilitatorCode || !(await verifyQuestionFacilitator(id, facilitatorCode))) {
@@ -142,7 +154,7 @@ router.delete('/:id', async (req: Request<{ id: string }>, res: Response) => {
 router.post('/:id/summarize', async (req: Request<{ id: string }>, res: Response) => {
   try {
     const { id } = req.params
-    const { facilitatorCode } = req.body as { facilitatorCode?: string }
+    const facilitatorCode = getFacilitatorCode(req)
 
     // Verify facilitator authorization
     if (!facilitatorCode || !(await verifyQuestionFacilitator(id, facilitatorCode))) {

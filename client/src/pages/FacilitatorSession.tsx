@@ -1,17 +1,22 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useFacilitatorSocket } from '../hooks/useFacilitatorSocket'
+import { useMeeting } from '../hooks/useMeeting'
 import QuestionCard from '../components/QuestionCard'
 import AnswerReveal from '../components/AnswerReveal'
-import type { Meeting } from '../types'
 
 export default function FacilitatorSession() {
   const { code } = useParams<{ code: string }>()
   const navigate = useNavigate()
 
-  const [meeting, setMeeting] = useState<Meeting | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [fetchError, setFetchError] = useState('')
+  const {
+    meeting,
+    loading,
+    error: fetchError,
+    setMeeting,
+    setError: setFetchError
+  } = useMeeting(code, { expectedRole: 'facilitator' })
+
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0)
   const [copied, setCopied] = useState(false)
 
@@ -23,38 +28,19 @@ export default function FacilitatorSession() {
     summary,
     timerEnd,
     error: socketError,
+    setError: setSocketError,
     startQuestion,
     revealAnswers,
     nextQuestion,
     endMeeting
   } = useFacilitatorSocket(meeting)
 
-  // Fetch meeting data
+  // Sync currentQuestionIndex when meeting loads
   useEffect(() => {
-    const fetchMeeting = async () => {
-      try {
-        const response = await fetch(`/api/meetings/code/${code}`)
-        if (!response.ok) {
-          throw new Error('Meeting not found')
-        }
-        const data: Meeting = await response.json()
-
-        if (!data.isFacilitator) {
-          navigate(`/join/${code}`)
-          return
-        }
-
-        setMeeting(data)
-        setCurrentQuestionIndex(data.currentQuestionIndex || 0)
-        setLoading(false)
-      } catch (err) {
-        setFetchError(err instanceof Error ? err.message : 'Failed to load meeting')
-        setLoading(false)
-      }
+    if (meeting?.currentQuestionIndex !== undefined) {
+      setCurrentQuestionIndex(meeting.currentQuestionIndex || 0)
     }
-
-    fetchMeeting()
-  }, [code, navigate])
+  }, [meeting?.currentQuestionIndex])
 
   const currentQuestion = meeting?.questions?.[currentQuestionIndex]
 
@@ -63,8 +49,10 @@ export default function FacilitatorSession() {
     try {
       await fetch(`/api/meetings/${meeting.id}/start`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ facilitatorCode: meeting.facilitatorCode })
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${meeting.facilitatorCode}`
+        }
       })
       setMeeting((prev) => (prev ? { ...prev, status: 'active' } : null))
     } catch {
@@ -102,8 +90,6 @@ export default function FacilitatorSession() {
     setTimeout(() => setCopied(false), 2000)
   }
 
-  const error = fetchError || socketError
-
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -112,10 +98,10 @@ export default function FacilitatorSession() {
     )
   }
 
-  if (error) {
+  if (fetchError) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="text-red-500">{error}</div>
+        <div className="text-red-500">{fetchError}</div>
       </div>
     )
   }
@@ -134,6 +120,27 @@ export default function FacilitatorSession() {
 
   return (
     <div className="min-h-screen bg-gray-100">
+      {/* Dismissible error notification */}
+      {socketError && (
+        <div className="fixed top-4 right-4 z-50 max-w-md bg-red-50 border border-red-200 rounded-lg shadow-lg p-4">
+          <div className="flex items-start gap-3">
+            <div className="flex-1">
+              <p className="text-sm text-red-800">{socketError}</p>
+            </div>
+            <button onClick={() => setSocketError('')} className="text-red-500 hover:text-red-700">
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <header className="bg-white shadow-sm">
         <div className="max-w-4xl mx-auto px-4 py-4 flex justify-between items-center">
