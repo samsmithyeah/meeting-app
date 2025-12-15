@@ -46,6 +46,13 @@ export default function AnswerInput({
 
   const saveEdit = () => {
     if (!editingId || !editText.trim()) return
+    const originalAnswer = myAnswers.find((a) => a.id === editingId)
+    // Skip if text hasn't changed
+    if (originalAnswer && editText.trim() === originalAnswer.text) {
+      setEditingId(null)
+      setEditText('')
+      return
+    }
     onEdit(editingId, editText.trim())
     setEditingId(null)
     setEditText('')

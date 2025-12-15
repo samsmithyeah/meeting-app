@@ -21,13 +21,21 @@ export default function AnswerGroup({
   const [isExpanded, setIsExpanded] = useState(true)
   const [isEditing, setIsEditing] = useState(false)
   const [editName, setEditName] = useState(group.name)
+  const [originalName, setOriginalName] = useState(group.name)
 
   const { setNodeRef, isOver } = useDroppable({
     id: group.id
   })
 
+  const startEditing = () => {
+    setOriginalName(group.name)
+    setEditName(group.name)
+    setIsEditing(true)
+  }
+
   const handleRename = () => {
-    if (editName.trim() && editName !== group.name && onRename) {
+    // Only rename if the text actually changed from when we started editing
+    if (editName.trim() && editName.trim() !== originalName && onRename) {
       onRename(editName.trim())
     }
     setIsEditing(false)
@@ -37,7 +45,7 @@ export default function AnswerGroup({
     if (e.key === 'Enter') {
       handleRename()
     } else if (e.key === 'Escape') {
-      setEditName(group.name)
+      setEditName(originalName)
       setIsEditing(false)
     }
   }
@@ -88,10 +96,7 @@ export default function AnswerGroup({
         {isFacilitator && !isEditing && (
           <div className="flex items-center gap-1">
             <button
-              onClick={() => {
-                setEditName(group.name)
-                setIsEditing(true)
-              }}
+              onClick={startEditing}
               className="p-1.5 text-gray-400 hover:text-indigo-600 rounded"
               title="Rename group"
             >
