@@ -229,8 +229,10 @@ export function setupSocketHandlers(io: TypedServer): void {
           return
         }
 
-        const questions = existingAnswer.questions as unknown as { status: string }
-        if (questions?.status !== 'active') {
+        const questionStatus = Array.isArray(existingAnswer.questions)
+          ? existingAnswer.questions[0]?.status
+          : (existingAnswer.questions as { status?: string } | null)?.status
+        if (questionStatus !== 'active') {
           socket.emit('error', { message: 'Cannot edit answer after question is closed' })
           return
         }
@@ -285,8 +287,10 @@ export function setupSocketHandlers(io: TypedServer): void {
           return
         }
 
-        const questions = existingAnswer.questions as unknown as { status: string }
-        if (questions?.status !== 'active') {
+        const questionStatus = Array.isArray(existingAnswer.questions)
+          ? existingAnswer.questions[0]?.status
+          : (existingAnswer.questions as { status?: string } | null)?.status
+        if (questionStatus !== 'active') {
           socket.emit('error', { message: 'Cannot delete answer after question is closed' })
           return
         }

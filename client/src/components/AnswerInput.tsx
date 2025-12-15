@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from 'react'
+import { useState, useRef, useEffect, type FormEvent } from 'react'
 import type { AnswerInputProps } from '../types'
 
 export default function AnswerInput({
@@ -12,6 +12,16 @@ export default function AnswerInput({
   const [editingId, setEditingId] = useState<string | null>(null)
   const [editText, setEditText] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const submitTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  // Clean up timer on unmount
+  useEffect(() => {
+    return () => {
+      if (submitTimerRef.current) {
+        clearTimeout(submitTimerRef.current)
+      }
+    }
+  }, [])
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault()
@@ -21,7 +31,7 @@ export default function AnswerInput({
     onSubmit(newAnswer.trim())
     setNewAnswer('')
     // Reset submitting state after a brief delay
-    setTimeout(() => setIsSubmitting(false), 300)
+    submitTimerRef.current = setTimeout(() => setIsSubmitting(false), 300)
   }
 
   const startEditing = (answerId: string, text: string) => {

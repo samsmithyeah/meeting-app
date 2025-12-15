@@ -87,10 +87,10 @@ function validateGroupingResult(result: unknown, validIds: string[]): GroupAnswe
         typeof (group as { groupName: unknown }).groupName === 'string' &&
         Array.isArray((group as { answerIds: unknown }).answerIds)
       ) {
-        const validAnswerIds = ((group as { answerIds: string[] }).answerIds || []).filter(
-          (id: string) => validIdSet.has(id) && !usedIds.has(id)
+        const validAnswerIds = ((group as { answerIds: unknown[] }).answerIds || []).filter(
+          (id): id is string => typeof id === 'string' && validIdSet.has(id) && !usedIds.has(id)
         )
-        validAnswerIds.forEach((id: string) => usedIds.add(id))
+        validAnswerIds.forEach((id) => usedIds.add(id))
 
         if (validAnswerIds.length > 0) {
           validGroups.push({
