@@ -30,6 +30,21 @@ export interface Answer {
   participantName?: string | null
 }
 
+// Grouped answers types
+export interface GroupWithAnswers {
+  id: string
+  name: string
+  displayOrder: number
+  answers: Answer[]
+}
+
+export interface GroupedAnswersData {
+  groups: GroupWithAnswers[]
+  ungrouped: Answer[]
+}
+
+export type UpdateGroupAction = 'move-answer' | 'create-group' | 'rename-group' | 'delete-group'
+
 // Session state (from Redis via Socket)
 export interface SessionState {
   status: 'waiting' | 'answering' | 'revealed'
@@ -51,21 +66,25 @@ export interface ServerToClientEvents {
     allowMultipleAnswers?: boolean
     timerEnd: number | null
   }) => void
-  'answer-received': () => void
+  'answer-received': (data: { answer: { id: string; text: string } }) => void
+  'answer-updated': (data: { answer: { id: string; text: string } }) => void
+  'answer-deleted': (data: { answerId: string }) => void
   'answer-submitted': (data: {
     answeredCount: number
     totalCount: number
+    answerCount: number
     allAnswered: boolean
   }) => void
-  'answers-revealed': (data: {
-    questionId: string
-    answers: Answer[]
-    summary: string | null
-  }) => void
+  'answers-revealed': (data: { questionId: string; answers: Answer[] }) => void
+  'summary-ready': (data: { questionId: string; summary: string }) => void
   'next-question': (data: { questionIndex: number }) => void
   'meeting-started': (data: { meetingId: string }) => void
   'meeting-ended': () => void
   error: (data: { message: string }) => void
+  // Grouping events
+  'grouping-started': (data: { questionId: string }) => void
+  'answers-grouped': (data: { questionId: string; groupedAnswers: GroupedAnswersData }) => void
+  'groups-updated': (data: { questionId: string; groupedAnswers: GroupedAnswersData }) => void
 }
 
 export interface ClientToServerEvents {
@@ -76,14 +95,31 @@ export interface ClientToServerEvents {
     questionId: string
     timeLimitSeconds?: number | null
   }) => void
-  'submit-answer': (data: {
+  'submit-answer': (data: { meetingId: string; questionId: string; text: string }) => void
+  'edit-answer': (data: {
     meetingId: string
     questionId: string
-    answers: string | string[]
+    answerId: string
+    text: string
   }) => void
+  'delete-answer': (data: { meetingId: string; questionId: string; answerId: string }) => void
   'reveal-answers': (data: { meetingId: string; questionId: string }) => void
   'next-question': (data: { meetingId: string; nextQuestionIndex: number }) => void
   'end-meeting': (data: { meetingId: string }) => void
+  // Grouping events
+  'group-answers': (data: { meetingId: string; questionId: string }) => void
+  'update-group': (data: {
+    meetingId: string
+    questionId: string
+    action: UpdateGroupAction
+    payload: {
+      answerId?: string
+      targetGroupId?: string | null
+      groupId?: string
+      name?: string
+      answerIds?: string[]
+    }
+  }) => void
 }
 
 export type TypedSocket = Socket<ServerToClientEvents, ClientToServerEvents>
@@ -100,13 +136,26 @@ export interface QuestionCardProps {
 
 export interface AnswerInputProps {
   allowMultiple: boolean
-  onSubmit: (answers: string | string[]) => void
+  myAnswers: MyAnswer[]
+  onSubmit: (text: string) => void
+  onEdit: (answerId: string, text: string) => void
+  onDelete: (answerId: string) => void
 }
 
 export interface AnswerRevealProps {
   answers: Answer[]
   summary?: string | null
+  isLoadingSummary?: boolean
   showNames: boolean
+  // Grouping props
+  groupedAnswers?: GroupedAnswersData | null
+  isGrouping?: boolean
+  isFacilitator?: boolean
+  onGroupAnswers?: () => void
+  onMoveAnswer?: (answerId: string, targetGroupId: string | null) => void
+  onCreateGroup?: (name: string, answerIds?: string[]) => void
+  onRenameGroup?: (groupId: string, name: string) => void
+  onDeleteGroup?: (groupId: string) => void
 }
 
 // Socket context
@@ -122,8 +171,10 @@ export interface FacilitatorSocketReturn {
   sessionStatus: SessionState['status']
   participantCount: number
   answeredCount: number
+  answerCount: number
   revealedAnswers: Answer[] | null
   summary: string
+  isLoadingSummary: boolean
   timerEnd: number | null
   error: string
   setError: (error: string) => void
@@ -131,18 +182,41 @@ export interface FacilitatorSocketReturn {
   revealAnswers: (questionId: string) => void
   nextQuestion: (nextQuestionIndex: number) => void
   endMeeting: () => void
+  // Grouping
+  groupedAnswers: GroupedAnswersData | null
+  isGrouping: boolean
+  groupAnswers: (questionId: string) => void
+  updateGroup: (
+    questionId: string,
+    action: UpdateGroupAction,
+    payload: {
+      answerId?: string
+      targetGroupId?: string | null
+      groupId?: string
+      name?: string
+      answerIds?: string[]
+    }
+  ) => void
+}
+
+export interface MyAnswer {
+  id: string
+  text: string
 }
 
 export interface ParticipantSocketReturn {
   sessionStatus: SessionState['status']
   currentQuestion: Question | null
-  hasAnswered: boolean
+  myAnswers: MyAnswer[]
   revealedAnswers: Answer[] | null
-  summary: string
   timerEnd: number | null
   answeredCount: number
   totalCount: number
   error: string
   meetingStatus: Meeting['status']
-  submitAnswer: (answers: string | string[]) => void
+  submitAnswer: (text: string) => void
+  editAnswer: (answerId: string, text: string) => void
+  deleteAnswer: (answerId: string) => void
+  // Grouping (view-only for participants)
+  groupedAnswers: GroupedAnswersData | null
 }
