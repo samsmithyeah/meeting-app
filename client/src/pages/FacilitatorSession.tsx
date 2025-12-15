@@ -4,6 +4,7 @@ import { useFacilitatorSocket } from '../hooks/useFacilitatorSocket'
 import { useMeeting } from '../hooks/useMeeting'
 import QuestionCard from '../components/QuestionCard'
 import AnswerReveal from '../components/AnswerReveal'
+import QRCodeDisplay from '../components/QRCodeDisplay'
 
 export default function FacilitatorSession() {
   const { code } = useParams<{ code: string }>()
@@ -168,10 +169,11 @@ export default function FacilitatorSession() {
         {meeting.status === 'draft' && (
           <div className="bg-white rounded-xl shadow-lg p-8 text-center">
             <h2 className="text-2xl font-bold mb-4">Ready to Start?</h2>
-            <p className="text-gray-600 mb-6">
-              Share the code <strong className="font-mono">{meeting.participantCode}</strong> with
-              participants
-            </p>
+            <p className="text-gray-600">Scan the QR code or enter the code to join</p>
+            <QRCodeDisplay
+              url={`${window.location.origin}/join/${meeting.participantCode}`}
+              participantCode={meeting.participantCode}
+            />
             <div className="flex justify-center gap-4">
               <button
                 onClick={copyJoinLink}
