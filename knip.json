@@ -1,0 +1,19 @@
+{
+  "workspaces": {
+    ".": {
+      "entry": [],
+      "project": ["*.js"]
+    },
+    "client": {
+      "entry": ["src/main.tsx", "src/types/index.ts"],
+      "project": ["src/**/*.{ts,tsx}"]
+    },
+    "server": {
+      "entry": ["src/index.ts", "src/types/index.ts"],
+      "project": ["src/**/*.ts"]
+    }
+  },
+  "ignore": ["**/node_modules/**"],
+  "ignoreBinaries": ["tsc"],
+  "ignoreExportsUsedInFile": true
+}
