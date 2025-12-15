@@ -69,7 +69,7 @@ function validateGroupingResult(result: unknown, validIds: string[]): GroupAnswe
   const usedIds = new Set<string>()
 
   // Type guard for the expected structure
-  if (!result || typeof result !== 'object') {
+  if (typeof result !== 'object' || result === null) {
     return { groups: [], ungroupedIds: validIds }
   }
 
