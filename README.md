@@ -42,6 +42,7 @@ A real-time meeting facilitation app for gathering and revealing team responses 
 ### 3. Redis Setup
 
 **Option A: Local Redis (for development)**
+
 ```bash
 # macOS with Homebrew
 brew install redis
@@ -52,6 +53,7 @@ redis-server
 ```
 
 **Option B: Cloud Redis**
+
 - [Upstash](https://upstash.com) - Free tier available
 - [Redis Cloud](https://redis.com/try-free/)
 
@@ -69,6 +71,7 @@ cp .env.example .env
 ```
 
 Edit `.env` with your credentials:
+
 ```
 SUPABASE_URL=https://your-project.supabase.co
 SUPABASE_ANON_KEY=your-anon-key
@@ -93,12 +96,14 @@ npm install
 ### 7. Start the Application
 
 **Terminal 1 - Start the server:**
+
 ```bash
 cd server
 npm run dev
 ```
 
 **Terminal 2 - Start the client:**
+
 ```bash
 cd client
 npm run dev
@@ -143,49 +148,52 @@ meeting-app/
 │   └── ...
 ├── server/                 # Node.js backend
 │   ├── src/
-│   │   ├── config/         # Supabase, Redis setup
+│   │   ├── config/          # Supabase, Redis setup
 │   │   ├── routes/         # REST API endpoints
 │   │   ├── services/       # AI service
 │   │   ├── socket/         # Socket.io handlers
-│   │   └── index.js        # Entry point
+│   │   └── index.ts        # Entry point
 │   └── ...
 └── supabase-schema.sql     # Database schema
 ```
 
 ## API Endpoints
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | /api/meetings | Create a new meeting |
-| GET | /api/meetings/code/:code | Get meeting by join code |
-| POST | /api/meetings/:id/start | Start the meeting |
-| POST | /api/meetings/:id/questions | Add questions |
-| POST | /api/questions/:id/summarize | Generate AI summary |
+| Method | Endpoint                     | Description              |
+| ------ | ---------------------------- | ------------------------ |
+| POST   | /api/meetings                | Create a new meeting     |
+| GET    | /api/meetings/code/:code     | Get meeting by join code |
+| POST   | /api/meetings/:id/start      | Start the meeting        |
+| POST   | /api/meetings/:id/questions  | Add questions            |
+| POST   | /api/questions/:id/summarize | Generate AI summary      |
 
 ## Socket.io Events
 
-| Event | Direction | Description |
-|-------|-----------|-------------|
-| join-meeting | Client→Server | Participant joins |
-| facilitator-join | Client→Server | Facilitator joins |
-| start-question | Client→Server | Begin accepting answers |
-| submit-answer | Client→Server | Submit answer(s) |
-| reveal-answers | Client→Server | Reveal all answers |
-| question-started | Server→Client | Question is active |
-| answers-revealed | Server→Client | Answers + summary |
+| Event            | Direction     | Description             |
+| ---------------- | ------------- | ----------------------- |
+| join-meeting     | Client→Server | Participant joins       |
+| facilitator-join | Client→Server | Facilitator joins       |
+| start-question   | Client→Server | Begin accepting answers |
+| submit-answer    | Client→Server | Submit answer(s)        |
+| reveal-answers   | Client→Server | Reveal all answers      |
+| question-started | Server→Client | Question is active      |
+| answers-revealed | Server→Client | Answers + summary       |
 
 ## Troubleshooting
 
 **Redis connection errors:**
+
 - Ensure Redis is running: `redis-cli ping` should return `PONG`
 - Check your `REDIS_URL` in `.env`
 
 **Supabase errors:**
+
 - Verify your API keys are correct
 - Ensure the schema was created successfully
 - Check Supabase dashboard for any errors
 
 **Socket.io not connecting:**
+
 - Check that the server is running on port 3001
 - Verify CORS settings match your client URL
 
