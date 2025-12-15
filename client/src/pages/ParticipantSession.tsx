@@ -43,7 +43,6 @@ export default function ParticipantSession() {
   } = useParticipantSocket(meeting, participantName)
 
   const error = fetchError || socketError
-  const currentMeetingStatus = meetingStatus || meeting?.status
 
   if (loading) {
     return (
@@ -81,7 +80,7 @@ export default function ParticipantSession() {
 
       <main className="max-w-lg mx-auto px-4 py-6">
         {/* Waiting for meeting to start */}
-        {currentMeetingStatus === 'draft' && (
+        {meetingStatus === 'draft' && (
           <div className="bg-white rounded-xl shadow p-8 text-center">
             <div className="animate-pulse mb-4">
               <div className="w-16 h-16 bg-indigo-100 rounded-full mx-auto flex items-center justify-center">
@@ -106,7 +105,7 @@ export default function ParticipantSession() {
         )}
 
         {/* Meeting active - waiting for question */}
-        {currentMeetingStatus === 'active' && sessionStatus === 'waiting' && !currentQuestion && (
+        {meetingStatus === 'active' && sessionStatus === 'waiting' && !currentQuestion && (
           <div className="bg-white rounded-xl shadow p-8 text-center">
             <div className="animate-pulse mb-4">
               <div className="w-16 h-16 bg-green-100 rounded-full mx-auto flex items-center justify-center">

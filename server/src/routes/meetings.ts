@@ -2,6 +2,7 @@ import { Router, Request, Response } from 'express'
 import { customAlphabet } from 'nanoid'
 import { supabase } from '../config/supabase.js'
 import { setSessionStatus, clearSession } from '../config/redis.js'
+import { getFacilitatorCode } from '../utils/auth.js'
 import type { TypedServer, CreateMeetingRequest } from '../types/index.js'
 
 const router = Router()
@@ -40,20 +41,6 @@ async function verifyFacilitator(meetingId: string, facilitatorCode: string): Pr
     .eq('id', meetingId)
     .single()
   return data?.facilitator_code === facilitatorCode
-}
-
-// Helper to extract facilitator code from Authorization header or body
-function getFacilitatorCode(req: Request): string | undefined {
-  // Check Authorization header first (Bearer token)
-  const authHeader = req.headers.authorization
-  if (authHeader?.startsWith('Bearer ')) {
-    return authHeader.slice(7)
-  }
-  // Fall back to body or query param
-  return (
-    (req.body as { facilitatorCode?: string })?.facilitatorCode ||
-    (req.query.facilitatorCode as string | undefined)
-  )
 }
 
 // Helper to fetch meeting with questions

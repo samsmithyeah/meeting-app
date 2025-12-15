@@ -234,7 +234,7 @@ export function setupSocketHandlers(io: TypedServer): void {
           const answerTexts = (answers || []).map((a: { text: string }) => a.text)
           summary = await summarizeAnswers(question?.text || '', answerTexts)
         } catch (e) {
-          const errorMessage = (e as Error).message
+          const errorMessage = e instanceof Error ? e.message : 'An unknown error occurred'
           console.error(`AI summarization failed for question ${questionId}:`, errorMessage)
           // Notify the facilitator about the failure
           io.to(`facilitator:${meetingId}`).emit('error', {

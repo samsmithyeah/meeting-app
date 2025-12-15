@@ -20,7 +20,14 @@ export function useParticipantSocket(
   const [answeredCount, setAnsweredCount] = useState(0)
   const [totalCount, setTotalCount] = useState(0)
   const [error, setError] = useState('')
-  const [meetingStatus, setMeetingStatus] = useState<Meeting['status']>(meeting?.status || 'draft')
+  const [meetingStatus, setMeetingStatus] = useState<Meeting['status']>('draft')
+
+  // Sync meetingStatus when meeting prop changes
+  useEffect(() => {
+    if (meeting?.status) {
+      setMeetingStatus(meeting.status)
+    }
+  }, [meeting?.status])
 
   // Connect to socket when meeting is loaded
   useEffect(() => {

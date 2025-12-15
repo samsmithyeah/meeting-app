@@ -1,19 +1,9 @@
 import { Router, Request, Response } from 'express'
 import { supabase } from '../config/supabase.js'
 import { summarizeAnswers } from '../services/ai.js'
+import { getFacilitatorCode } from '../utils/auth.js'
 
 const router = Router()
-
-// Helper to extract facilitator code from Authorization header or body
-function getFacilitatorCode(req: Request): string | undefined {
-  // Check Authorization header first (Bearer token)
-  const authHeader = req.headers.authorization
-  if (authHeader?.startsWith('Bearer ')) {
-    return authHeader.slice(7)
-  }
-  // Fall back to body
-  return (req.body as { facilitatorCode?: string })?.facilitatorCode
-}
 
 // Helper to verify facilitator authorization for a question
 async function verifyQuestionFacilitator(
