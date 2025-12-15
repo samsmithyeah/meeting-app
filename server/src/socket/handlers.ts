@@ -58,7 +58,7 @@ export function setupSocketHandlers(io: TypedServer): void {
           // Check for unique constraint violation (duplicate name)
           if (error.code === PG_UNIQUE_VIOLATION) {
             socket.emit('error', {
-              message: 'This name is already taken. Please choose a different name.'
+              message: `The name "${participantName}" is already taken. Please choose a different name.`
             })
             return
           }

@@ -42,6 +42,27 @@ async function verifyFacilitator(meetingId: string, facilitatorCode: string): Pr
   return data?.facilitator_code === facilitatorCode
 }
 
+// Helper to fetch meeting with questions
+async function getMeetingWithQuestions(meetingId: string) {
+  const { data: meeting, error } = await supabase
+    .from('meetings')
+    .select('*')
+    .eq('id', meetingId)
+    .single()
+
+  if (error || !meeting) {
+    return { meeting: null, questions: [] }
+  }
+
+  const { data: questions } = await supabase
+    .from('questions')
+    .select('*')
+    .eq('meeting_id', meetingId)
+    .order('order_index')
+
+  return { meeting, questions: questions || [] }
+}
+
 // Extend Express Request to include app with io
 interface AppRequest extends Request {
   app: Request['app'] & {
@@ -88,24 +109,24 @@ router.get('/code/:code', async (req: Request<{ code: string }>, res: Response) 
     const { code } = req.params
     const upperCode = code.toUpperCase()
 
-    const { data: meeting, error } = await supabase
+    // First lookup meeting by code
+    const { data: meetingByCode, error: codeError } = await supabase
       .from('meetings')
-      .select('*')
+      .select('id, facilitator_code')
       .or(`facilitator_code.eq.${upperCode},participant_code.eq.${upperCode}`)
       .single()
 
-    if (error || !meeting) {
+    if (codeError || !meetingByCode) {
       return res.status(404).json({ error: 'Meeting not found' })
     }
 
-    const isFacilitator = meeting.facilitator_code === upperCode
+    const { meeting, questions } = await getMeetingWithQuestions(meetingByCode.id)
 
-    // Get questions
-    const { data: questions } = await supabase
-      .from('questions')
-      .select('*')
-      .eq('meeting_id', meeting.id)
-      .order('order_index')
+    if (!meeting) {
+      return res.status(404).json({ error: 'Meeting not found' })
+    }
+
+    const isFacilitator = meetingByCode.facilitator_code === upperCode
 
     res.json({
       id: meeting.id,
@@ -116,7 +137,7 @@ router.get('/code/:code', async (req: Request<{ code: string }>, res: Response) 
       isFacilitator,
       facilitatorCode: isFacilitator ? meeting.facilitator_code : undefined,
       participantCode: meeting.participant_code,
-      questions: (questions || []).map(mapQuestionToCamelCase)
+      questions: questions.map(mapQuestionToCamelCase)
     })
   } catch (error) {
     console.error('Get meeting error:', error)
@@ -129,25 +150,15 @@ router.get('/:id', async (req: Request<{ id: string }>, res: Response) => {
   try {
     const { id } = req.params
 
-    const { data: meeting, error } = await supabase
-      .from('meetings')
-      .select('*')
-      .eq('id', id)
-      .single()
+    const { meeting, questions } = await getMeetingWithQuestions(id)
 
-    if (error || !meeting) {
+    if (!meeting) {
       return res.status(404).json({ error: 'Meeting not found' })
     }
 
-    const { data: questions } = await supabase
-      .from('questions')
-      .select('*')
-      .eq('meeting_id', id)
-      .order('order_index')
-
     res.json({
       ...meeting,
-      questions: questions || []
+      questions
     })
   } catch (error) {
     console.error('Get meeting error:', error)
