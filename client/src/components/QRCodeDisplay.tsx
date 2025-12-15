@@ -28,8 +28,8 @@ export default function QRCodeDisplay({ url, participantCode, size = 200 }: QRCo
   return (
     <>
       {/* Inline QR Code */}
-      <div className="flex flex-col items-center gap-3 my-6">
-        <div className="bg-white p-4 rounded-lg border border-gray-200">
+      <div className="flex flex-col items-center gap-4 my-6">
+        <div className="bg-white p-5 rounded-2xl border border-neutral-200 shadow-soft">
           <QRCodeSVG
             value={url}
             size={size}
@@ -37,11 +37,21 @@ export default function QRCodeDisplay({ url, participantCode, size = 200 }: QRCo
             title={`Join meeting with code ${participantCode}`}
           />
         </div>
-        <p className="font-mono text-2xl font-bold text-gray-900">{participantCode}</p>
-        <button
-          onClick={() => setIsFullscreen(true)}
-          className="text-sm text-indigo-600 hover:text-indigo-800 font-medium"
-        >
+        <div className="text-center">
+          <p className="font-mono text-3xl font-bold text-neutral-900 tracking-widest">
+            {participantCode}
+          </p>
+          <p className="text-sm text-neutral-500 mt-1">Meeting Code</p>
+        </div>
+        <button onClick={() => setIsFullscreen(true)} className="btn-ghost text-sm">
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"
+            />
+          </svg>
           Enlarge for projection
         </button>
       </div>
@@ -49,25 +59,32 @@ export default function QRCodeDisplay({ url, participantCode, size = 200 }: QRCo
       {/* Fullscreen Modal */}
       {isFullscreen && (
         <div
-          className="fixed inset-0 z-50 bg-white flex flex-col items-center justify-center"
+          className="fixed inset-0 z-50 bg-white flex flex-col items-center justify-center animate-fade-in"
           onClick={() => setIsFullscreen(false)}
         >
           <div className="text-center" onClick={(e) => e.stopPropagation()}>
-            <QRCodeSVG
-              value={url}
-              size={Math.min(window.innerWidth, window.innerHeight) * 0.5}
-              level="H"
-              title={`Join meeting with code ${participantCode}`}
-            />
-            <p className="font-mono text-6xl font-bold text-gray-900 mt-8">{participantCode}</p>
-            <p className="text-gray-500 mt-4 text-xl">
-              Scan to join or visit {window.location.origin}
+            <div className="bg-white p-8 rounded-3xl shadow-soft-xl inline-block">
+              <QRCodeSVG
+                value={url}
+                size={Math.min(window.innerWidth, window.innerHeight) * 0.45}
+                level="H"
+                title={`Join meeting with code ${participantCode}`}
+              />
+            </div>
+            <p className="font-mono text-7xl font-bold gradient-text mt-10 tracking-widest">
+              {participantCode}
+            </p>
+            <p className="text-neutral-500 mt-4 text-xl">
+              Scan the QR code or visit{' '}
+              <span className="text-coral-600 font-medium">{window.location.origin}</span>
             </p>
           </div>
+
+          {/* Close button */}
           <button
             aria-label="Close fullscreen"
             onClick={() => setIsFullscreen(false)}
-            className="absolute top-6 right-6 text-gray-500 hover:text-gray-700"
+            className="absolute top-6 right-6 p-3 text-neutral-400 hover:text-neutral-600 hover:bg-neutral-100 rounded-full transition-colors"
           >
             <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path
@@ -78,6 +95,13 @@ export default function QRCodeDisplay({ url, participantCode, size = 200 }: QRCo
               />
             </svg>
           </button>
+
+          {/* Instructions */}
+          <p className="absolute bottom-8 text-neutral-400 text-sm">
+            Press{' '}
+            <kbd className="px-2 py-1 bg-neutral-100 rounded text-neutral-600 font-mono">Esc</kbd>{' '}
+            or click anywhere to close
+          </p>
         </div>
       )}
     </>

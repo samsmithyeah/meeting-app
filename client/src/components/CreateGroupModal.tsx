@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect, type FormEvent } from 'react'
 
 interface CreateGroupModalProps {
   isOpen: boolean
@@ -9,61 +9,107 @@ interface CreateGroupModalProps {
 export default function CreateGroupModal({ isOpen, onClose, onCreate }: CreateGroupModalProps) {
   const [name, setName] = useState('')
 
-  if (!isOpen) return null
+  useEffect(() => {
+    if (!isOpen) return
 
-  const handleSubmit = (e: React.FormEvent) => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        onClose()
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [isOpen, onClose])
+
+  // Reset name when modal opens
+  useEffect(() => {
+    if (isOpen) {
+      setName('')
+    }
+  }, [isOpen])
+
+  const handleSubmit = (e: FormEvent) => {
     e.preventDefault()
     if (name.trim()) {
       onCreate(name.trim())
-      setName('')
-      onClose()
     }
   }
 
-  const handleClose = () => {
-    setName('')
-    onClose()
-  }
+  if (!isOpen) return null
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       {/* Backdrop */}
-      <div className="absolute inset-0 bg-black/50" onClick={handleClose} />
+      <div
+        className="absolute inset-0 bg-neutral-900/50 backdrop-blur-sm animate-fade-in"
+        onClick={onClose}
+      />
 
       {/* Modal */}
-      <div className="relative bg-white rounded-xl shadow-xl p-6 w-full max-w-md mx-4">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Create New Group</h3>
+      <div className="relative card p-6 w-full max-w-md animate-scale-in">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-gradient-to-br from-coral-500 to-amber-500 rounded-xl flex items-center justify-center">
+              <svg
+                className="w-5 h-5 text-white"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 4v16m8-8H4"
+                />
+              </svg>
+            </div>
+            <h2 className="text-xl font-bold text-neutral-900">Create New Group</h2>
+          </div>
+          <button
+            onClick={onClose}
+            aria-label="Close modal"
+            className="p-2 text-neutral-400 hover:text-neutral-600 hover:bg-neutral-100 rounded-lg transition-colors"
+          >
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M6 18L18 6M6 6l12 12"
+              />
+            </svg>
+          </button>
+        </div>
 
-        <form onSubmit={handleSubmit}>
-          <div className="mb-4">
-            <label htmlFor="group-name" className="block text-sm font-medium text-gray-700 mb-1">
+        {/* Form */}
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label
+              htmlFor="groupName"
+              className="block text-sm font-semibold text-neutral-700 mb-2"
+            >
               Group Name
             </label>
             <input
-              id="group-name"
               type="text"
+              id="groupName"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="e.g., Technical Issues"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+              className="input-field"
+              placeholder="e.g., Technical Issues, Feature Requests"
               autoFocus
             />
           </div>
 
-          <div className="flex justify-end gap-3">
-            <button
-              type="button"
-              onClick={handleClose}
-              className="px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg font-medium"
-            >
+          <div className="flex gap-3 pt-2">
+            <button type="button" onClick={onClose} className="btn-ghost flex-1">
               Cancel
             </button>
-            <button
-              type="submit"
-              disabled={!name.trim()}
-              className="px-4 py-2 text-white bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-400 rounded-lg font-medium"
-            >
-              Create
+            <button type="submit" disabled={!name.trim()} className="btn-primary flex-1">
+              Create Group
             </button>
           </div>
         </form>

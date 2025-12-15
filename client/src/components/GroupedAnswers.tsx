@@ -36,21 +36,34 @@ function UngroupedSection({
   return (
     <div
       ref={setNodeRef}
-      className={`rounded-xl border-2 border-dashed transition-colors ${
-        isOver ? 'border-gray-400 bg-gray-100' : 'border-gray-300 bg-gray-50'
+      className={`rounded-2xl border-2 border-dashed transition-all ${
+        isOver ? 'border-coral-400 bg-coral-50' : 'border-neutral-200 bg-neutral-50'
       }`}
     >
-      <div className="p-4 border-b border-gray-200">
+      <div className="p-4 border-b border-neutral-200">
         <div className="flex items-center gap-2">
-          <h4 className="font-medium text-gray-700">Ungrouped</h4>
-          <span className="px-2 py-0.5 text-xs font-medium text-gray-600 bg-gray-200 rounded-full">
+          <svg
+            className="w-4 h-4 text-neutral-400"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M4 6h16M4 12h16M4 18h16"
+            />
+          </svg>
+          <h4 className="font-medium text-neutral-700">Ungrouped</h4>
+          <span className="px-2 py-0.5 text-xs font-medium text-neutral-600 bg-neutral-200 rounded-full">
             {answers.length}
           </span>
         </div>
       </div>
       <div className="p-4 space-y-3">
         {answers.length === 0 ? (
-          <p className="text-sm text-gray-500 text-center py-4">
+          <p className="text-sm text-neutral-500 text-center py-4">
             {isFacilitator ? 'Drag answers here to ungroup them' : 'No ungrouped answers'}
           </p>
         ) : (
@@ -129,11 +142,27 @@ export default function GroupedAnswers({
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h3 className="font-semibold text-gray-900">Grouped Responses ({totalAnswers})</h3>
+        <h3 className="font-semibold text-neutral-900 flex items-center gap-2">
+          <svg
+            className="w-5 h-5 text-neutral-400"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
+            />
+          </svg>
+          Grouped Responses
+          <span className="text-sm font-normal text-neutral-500">({totalAnswers})</span>
+        </h3>
         {isFacilitator && (
           <button
             onClick={() => setShowCreateModal(true)}
-            className="flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50 rounded-lg"
+            className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-coral-600 hover:text-coral-700 hover:bg-coral-50 rounded-lg transition-colors"
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path
@@ -175,7 +204,7 @@ export default function GroupedAnswers({
         {/* Drag overlay for visual feedback */}
         <DragOverlay>
           {activeAnswer && (
-            <div className="opacity-80">
+            <div className="opacity-90 rotate-2 scale-105">
               <DraggableAnswer answer={activeAnswer} showName={showNames} isDraggable={false} />
             </div>
           )}

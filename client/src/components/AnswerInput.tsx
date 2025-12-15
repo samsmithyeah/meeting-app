@@ -65,50 +65,62 @@ export default function AnswerInput({
   const canAddMore = allowMultiple || myAnswers.length === 0
 
   return (
-    <div className="bg-white rounded-xl shadow-lg p-6 space-y-4">
+    <div className="card p-6 space-y-4">
       {/* Submitted Answers */}
       {myAnswers.length > 0 && (
         <div className="space-y-3">
-          <h4 className="text-sm font-medium text-gray-700">
+          <h4 className="text-sm font-semibold text-neutral-700 flex items-center gap-2">
+            <svg
+              className="w-4 h-4 text-green-500"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M5 13l4 4L19 7"
+              />
+            </svg>
             Your {myAnswers.length === 1 ? 'Answer' : 'Answers'}
           </h4>
           {myAnswers.map((answer) => (
-            <div key={answer.id} className="p-3 bg-green-50 border border-green-200 rounded-lg">
+            <div
+              key={answer.id}
+              className="p-4 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-xl transition-all"
+            >
               {editingId === answer.id ? (
-                <div className="space-y-2">
+                <div className="space-y-3">
                   <textarea
                     value={editText}
                     onChange={(e) => setEditText(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 resize-none"
+                    className="textarea-field"
                     rows={3}
                     autoFocus
                   />
                   <div className="flex gap-2 justify-end">
-                    <button
-                      type="button"
-                      onClick={cancelEditing}
-                      className="px-3 py-1.5 text-sm text-gray-600 hover:text-gray-800"
-                    >
+                    <button type="button" onClick={cancelEditing} className="btn-ghost text-sm">
                       Cancel
                     </button>
                     <button
                       type="button"
                       onClick={saveEdit}
                       disabled={!editText.trim()}
-                      className="px-3 py-1.5 text-sm bg-indigo-600 hover:bg-indigo-700 disabled:bg-gray-400 text-white rounded-lg"
+                      className="btn-primary text-sm py-2 px-4"
                     >
                       Save
                     </button>
                   </div>
                 </div>
               ) : (
-                <div className="flex items-start gap-2">
-                  <p className="flex-1 text-gray-800">{answer.text}</p>
-                  <div className="flex gap-1">
+                <div className="flex items-start gap-3">
+                  <p className="flex-1 text-neutral-800 leading-relaxed">{answer.text}</p>
+                  <div className="flex gap-1 flex-shrink-0">
                     <button
                       type="button"
                       onClick={() => startEditing(answer.id, answer.text)}
-                      className="p-1.5 text-gray-500 hover:text-indigo-600 rounded"
+                      className="p-2 text-neutral-400 hover:text-coral-600 hover:bg-coral-50 rounded-lg transition-colors"
                       title="Edit"
                     >
                       <svg
@@ -128,7 +140,7 @@ export default function AnswerInput({
                     <button
                       type="button"
                       onClick={() => handleDelete(answer.id)}
-                      className="p-1.5 text-gray-500 hover:text-red-600 rounded"
+                      className="p-2 text-neutral-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                       title="Delete"
                     >
                       <svg
@@ -155,28 +167,67 @@ export default function AnswerInput({
 
       {/* Add New Answer Form */}
       {canAddMore && (
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} className="space-y-3">
           <textarea
             value={newAnswer}
             onChange={(e) => setNewAnswer(e.target.value)}
             placeholder={myAnswers.length > 0 ? 'Add another answer...' : 'Type your answer...'}
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 resize-none"
+            className="textarea-field"
             rows={3}
             disabled={isSubmitting}
           />
           <button
             type="submit"
             disabled={!newAnswer.trim() || isSubmitting}
-            className="mt-3 w-full bg-indigo-600 hover:bg-indigo-700 disabled:bg-gray-400 text-white font-semibold py-3 px-6 rounded-lg transition-colors"
+            className="btn-primary w-full"
           >
-            {isSubmitting ? 'Adding...' : myAnswers.length > 0 ? 'Add Answer' : 'Submit Answer'}
+            {isSubmitting ? (
+              <>
+                <svg className="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  />
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  />
+                </svg>
+                Adding...
+              </>
+            ) : (
+              <>
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
+                  />
+                </svg>
+                {myAnswers.length > 0 ? 'Add Answer' : 'Submit Answer'}
+              </>
+            )}
           </button>
         </form>
       )}
 
       {/* Message when can't add more */}
       {!canAddMore && (
-        <p className="text-sm text-gray-500 text-center py-2">
+        <p className="text-sm text-neutral-500 text-center py-2 flex items-center justify-center gap-2">
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+            />
+          </svg>
           Only one answer allowed for this question
         </p>
       )}

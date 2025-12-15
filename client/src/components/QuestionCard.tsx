@@ -34,60 +34,102 @@ export default function QuestionCard({
     return `${mins}:${secs.toString().padStart(2, '0')}`
   }
 
+  const isUrgent = timeLeft !== null && timeLeft <= 10
+
   return (
-    <div className="bg-white rounded-xl shadow-lg p-6">
-      {/* Timer */}
-      {timeLeft !== null && status === 'answering' && (
-        <div className={`mb-4 text-center ${timeLeft <= 10 ? 'text-red-600' : 'text-gray-600'}`}>
-          <div className="text-3xl font-mono font-bold">{formatTime(timeLeft)}</div>
-          <div className="text-sm">remaining</div>
-        </div>
-      )}
+    <div className="card overflow-hidden">
+      {/* Gradient accent bar */}
+      <div className="h-1 bg-gradient-to-r from-coral-500 via-amber-500 to-coral-400" />
 
-      {/* Question */}
-      <div className="text-xl font-medium text-gray-900 text-center">{question.text}</div>
-
-      {/* Status indicators */}
-      {isFacilitator && status === 'answering' && (
-        <div className="mt-4 text-center">
-          <div className="inline-flex items-center gap-2 bg-blue-50 text-blue-700 px-4 py-2 rounded-full">
-            <span className="relative flex h-3 w-3">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-3 w-3 bg-blue-500"></span>
-            </span>
-            <span className="font-medium">
-              {answeredCount} of {totalCount} answered
-            </span>
+      <div className="p-6">
+        {/* Timer */}
+        {timeLeft !== null && status === 'answering' && (
+          <div className="flex justify-center mb-6">
+            <div
+              className={`relative flex items-center justify-center w-24 h-24 rounded-full ${
+                isUrgent
+                  ? 'bg-red-50 border-4 border-red-200'
+                  : 'bg-neutral-50 border-4 border-neutral-200'
+              }`}
+            >
+              {isUrgent && (
+                <div className="absolute inset-0 rounded-full animate-ping bg-red-200 opacity-30" />
+              )}
+              <div className="text-center">
+                <div
+                  className={`text-3xl font-mono font-bold ${
+                    isUrgent ? 'text-red-600' : 'text-neutral-900'
+                  }`}
+                >
+                  {formatTime(timeLeft)}
+                </div>
+                <div
+                  className={`text-xs font-medium ${isUrgent ? 'text-red-500' : 'text-neutral-500'}`}
+                >
+                  remaining
+                </div>
+              </div>
+            </div>
           </div>
-        </div>
-      )}
+        )}
 
-      {status === 'revealed' && (
-        <div className="mt-4 text-center">
-          <span className="inline-flex items-center gap-2 bg-green-50 text-green-700 px-4 py-2 rounded-full">
-            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        {/* Question text */}
+        <h2 className="text-xl font-semibold text-neutral-900 text-center leading-relaxed">
+          {question.text}
+        </h2>
+
+        {/* Status indicators */}
+        {isFacilitator && status === 'answering' && (
+          <div className="mt-6 flex justify-center">
+            <div className="badge badge-live">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500" />
+              </span>
+              <span>
+                {answeredCount} of {totalCount} answered
+              </span>
+            </div>
+          </div>
+        )}
+
+        {status === 'revealed' && (
+          <div className="mt-6 flex justify-center">
+            <div className="badge badge-complete">
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                />
+              </svg>
+              <span>Answers Revealed</span>
+            </div>
+          </div>
+        )}
+
+        {/* Question options indicator */}
+        {question.allowMultipleAnswers && status !== 'revealed' && (
+          <p className="mt-4 text-sm text-neutral-500 text-center flex items-center justify-center gap-1.5">
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
                 strokeWidth={2}
-                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-              />
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
               />
             </svg>
-            <span className="font-medium">Answers Revealed</span>
-          </span>
-        </div>
-      )}
-
-      {/* Question options indicator */}
-      {question.allowMultipleAnswers && status !== 'revealed' && (
-        <p className="mt-3 text-sm text-gray-500 text-center">Multiple answers allowed</p>
-      )}
+            Multiple answers allowed
+          </p>
+        )}
+      </div>
     </div>
   )
 }

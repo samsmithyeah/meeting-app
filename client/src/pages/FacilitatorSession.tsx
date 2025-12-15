@@ -124,24 +124,65 @@ export default function FacilitatorSession() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-gray-500">Loading...</div>
+      <div className="min-h-screen flex items-center justify-center bg-gradient-subtle">
+        <div className="text-center">
+          <div className="w-12 h-12 border-4 border-coral-200 border-t-coral-500 rounded-full animate-spin mx-auto mb-4" />
+          <p className="text-neutral-500 font-medium">Loading meeting...</p>
+        </div>
       </div>
     )
   }
 
   if (fetchError) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-red-500">{fetchError}</div>
+      <div className="min-h-screen flex items-center justify-center bg-gradient-subtle">
+        <div className="card p-8 max-w-md text-center">
+          <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <svg
+              className="w-8 h-8 text-red-500"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
+            </svg>
+          </div>
+          <h2 className="text-xl font-bold text-neutral-900 mb-2">Something went wrong</h2>
+          <p className="text-neutral-500">{fetchError}</p>
+        </div>
       </div>
     )
   }
 
   if (!meeting) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-gray-500">Meeting not found</div>
+      <div className="min-h-screen flex items-center justify-center bg-gradient-subtle">
+        <div className="card p-8 max-w-md text-center">
+          <div className="w-16 h-16 bg-neutral-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <svg
+              className="w-8 h-8 text-neutral-400"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
+            </svg>
+          </div>
+          <h2 className="text-xl font-bold text-neutral-900 mb-2">Meeting not found</h2>
+          <p className="text-neutral-500">
+            This meeting may have been deleted or the link is invalid.
+          </p>
+        </div>
       </div>
     )
   }
@@ -151,15 +192,33 @@ export default function FacilitatorSession() {
     : true
 
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen bg-gradient-subtle">
       {/* Dismissible error notification */}
       {socketError && (
-        <div className="fixed top-4 right-4 z-50 max-w-md bg-red-50 border border-red-200 rounded-lg shadow-lg p-4">
+        <div className="fixed top-4 right-4 z-50 max-w-md card p-4 border-red-200 bg-red-50 animate-fade-in-down">
           <div className="flex items-start gap-3">
-            <div className="flex-1">
-              <p className="text-sm text-red-800">{socketError}</p>
+            <div className="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0">
+              <svg
+                className="w-4 h-4 text-red-600"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
             </div>
-            <button onClick={() => setSocketError('')} className="text-red-500 hover:text-red-700">
+            <div className="flex-1">
+              <p className="text-sm font-medium text-red-800">{socketError}</p>
+            </div>
+            <button
+              onClick={() => setSocketError('')}
+              className="text-red-400 hover:text-red-600 transition-colors"
+            >
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path
                   strokeLinecap="round"
@@ -174,48 +233,139 @@ export default function FacilitatorSession() {
       )}
 
       {/* Header */}
-      <header className="bg-white shadow-sm">
-        <div className="max-w-4xl mx-auto px-4 py-4 flex justify-between items-center">
-          <div>
-            <h1 className="text-xl font-bold text-gray-900">{meeting.title}</h1>
-            <p className="text-sm text-gray-500">Facilitator View</p>
-          </div>
-          <div className="flex items-center gap-4">
-            <div className="text-sm">
-              <span className="font-medium">{participantCount}</span>
-              <span className="text-gray-500"> participants</span>
+      <header className="bg-white border-b border-neutral-100 sticky top-0 z-40">
+        <div className="max-w-5xl mx-auto px-4 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <div className="w-10 h-10 bg-gradient-to-br from-coral-500 to-amber-500 rounded-xl flex items-center justify-center shadow-sm">
+                <svg
+                  className="w-5 h-5 text-white"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"
+                  />
+                </svg>
+              </div>
+              <div>
+                <h1 className="text-lg font-bold text-neutral-900">{meeting.title}</h1>
+                <p className="text-sm text-neutral-500">Facilitator View</p>
+              </div>
             </div>
-            <button
-              onClick={copyJoinLink}
-              className="bg-gray-100 hover:bg-gray-200 px-3 py-1.5 rounded text-sm font-medium transition-colors"
-            >
-              {copied ? 'Copied!' : `Share: ${meeting.participantCode}`}
-            </button>
+
+            <div className="flex items-center gap-4">
+              {/* Participant count */}
+              <div className="flex items-center gap-2 px-3 py-1.5 bg-neutral-100 rounded-full">
+                <div className="relative">
+                  <div className="w-2 h-2 bg-green-500 rounded-full" />
+                  <div className="absolute inset-0 w-2 h-2 bg-green-500 rounded-full animate-ping" />
+                </div>
+                <span className="text-sm font-medium text-neutral-700">
+                  {participantCount} participant{participantCount !== 1 ? 's' : ''}
+                </span>
+              </div>
+
+              {/* Share button */}
+              <button
+                onClick={copyJoinLink}
+                className={`flex items-center gap-2 px-4 py-2 rounded-xl font-medium text-sm transition-all ${
+                  copied
+                    ? 'bg-green-100 text-green-700 border border-green-200'
+                    : 'bg-neutral-100 hover:bg-neutral-200 text-neutral-700'
+                }`}
+              >
+                {copied ? (
+                  <>
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M5 13l4 4L19 7"
+                      />
+                    </svg>
+                    Copied!
+                  </>
+                ) : (
+                  <>
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"
+                      />
+                    </svg>
+                    Share: {meeting.participantCode}
+                  </>
+                )}
+              </button>
+            </div>
           </div>
         </div>
       </header>
 
-      <main className="max-w-4xl mx-auto px-4 py-8">
+      <main className="max-w-5xl mx-auto px-4 py-8">
         {/* Meeting not started */}
         {meeting.status === 'draft' && (
-          <div className="bg-white rounded-xl shadow-lg p-8 text-center">
-            <h2 className="text-2xl font-bold mb-4">Ready to Start?</h2>
-            <p className="text-gray-600">Scan the QR code or enter the code to join</p>
+          <div className="card p-8 text-center max-w-2xl mx-auto animate-fade-in-up">
+            <div className="mb-6">
+              <div className="w-20 h-20 bg-gradient-to-br from-coral-100 to-amber-100 rounded-3xl flex items-center justify-center mx-auto mb-4">
+                <svg
+                  className="w-10 h-10 text-coral-600"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
+                  />
+                </svg>
+              </div>
+              <h2 className="text-2xl font-bold text-neutral-900 mb-2">Ready to Start?</h2>
+              <p className="text-neutral-500">Share the code below for participants to join</p>
+            </div>
+
             <QRCodeDisplay
               url={`${window.location.origin}/join/${meeting.participantCode}`}
               participantCode={meeting.participantCode}
             />
-            <div className="flex justify-center gap-4">
-              <button
-                onClick={copyJoinLink}
-                className="bg-gray-100 hover:bg-gray-200 px-6 py-3 rounded-lg font-medium transition-colors"
-              >
+
+            <div className="flex justify-center gap-4 mt-8">
+              <button onClick={copyJoinLink} className="btn-secondary">
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
+                  />
+                </svg>
                 Copy Join Link
               </button>
-              <button
-                onClick={startMeeting}
-                className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-lg font-medium transition-colors"
-              >
+              <button onClick={startMeeting} className="btn-primary">
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"
+                  />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
                 Start Meeting
               </button>
             </div>
@@ -224,29 +374,29 @@ export default function FacilitatorSession() {
 
         {/* Active meeting */}
         {meeting.status === 'active' && currentQuestion && (
-          <div className="space-y-6">
-            {/* Progress */}
-            <div className="flex items-center justify-between text-sm text-gray-500">
-              <span>
+          <div className="space-y-6 animate-fade-in">
+            {/* Progress bar */}
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-medium text-neutral-600">
                 Question {currentQuestionIndex + 1} of {meeting.questions?.length || 0}
               </span>
-              <div className="flex gap-1">
+              <div className="flex gap-1.5">
                 {meeting.questions?.map((_, i) => (
                   <div
                     key={i}
-                    className={`w-8 h-1 rounded ${
+                    className={`h-2 rounded-full transition-all duration-300 ${
                       i < currentQuestionIndex
-                        ? 'bg-green-500'
+                        ? 'w-8 bg-green-500'
                         : i === currentQuestionIndex
-                          ? 'bg-indigo-500'
-                          : 'bg-gray-300'
+                          ? 'w-8 bg-gradient-to-r from-coral-500 to-amber-500'
+                          : 'w-8 bg-neutral-200'
                     }`}
                   />
                 ))}
               </div>
             </div>
 
-            {/* Question */}
+            {/* Question card */}
             <QuestionCard
               question={currentQuestion}
               status={sessionStatus}
@@ -258,16 +408,26 @@ export default function FacilitatorSession() {
 
             {/* Placeholder cards while answering */}
             {sessionStatus === 'answering' && answerCount > 0 && (
-              <div className="bg-white rounded-xl shadow-lg p-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Answers Received</h3>
+              <div className="card p-6 animate-fade-in-up">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-lg font-semibold text-neutral-900">Answers Received</h3>
+                  <span className="badge badge-live">
+                    <span className="relative flex h-2 w-2">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
+                      <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500" />
+                    </span>
+                    Live
+                  </span>
+                </div>
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
                   {Array.from({ length: answerCount }).map((_, i) => (
                     <div
                       key={i}
-                      className="h-16 bg-gradient-to-br from-indigo-50 to-purple-50 border border-indigo-100 rounded-lg flex items-center justify-center animate-pulse"
+                      className="h-20 bg-gradient-to-br from-coral-50 to-amber-50 border border-coral-100 rounded-xl flex items-center justify-center shimmer"
+                      style={{ animationDelay: `${i * 100}ms` }}
                     >
                       <svg
-                        className="w-6 h-6 text-indigo-300"
+                        className="w-6 h-6 text-coral-300"
                         fill="none"
                         viewBox="0 0 24 24"
                         stroke="currentColor"
@@ -304,13 +464,21 @@ export default function FacilitatorSession() {
             )}
 
             {/* Controls */}
-            <div className="flex justify-center gap-4">
+            <div className="flex justify-center gap-4 pt-4">
               {sessionStatus === 'waiting' && (
                 <button
                   onClick={handleStartQuestion}
                   disabled={participantCount === 0}
-                  className="bg-indigo-600 hover:bg-indigo-700 disabled:bg-gray-400 text-white px-8 py-3 rounded-lg font-medium transition-colors"
+                  className="btn-primary px-8"
                 >
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"
+                    />
+                  </svg>
                   Start Question
                 </button>
               )}
@@ -318,8 +486,22 @@ export default function FacilitatorSession() {
               {sessionStatus === 'answering' && (
                 <button
                   onClick={handleRevealAnswers}
-                  className="bg-green-600 hover:bg-green-700 text-white px-8 py-3 rounded-lg font-medium transition-colors"
+                  className="btn-primary px-8 bg-gradient-to-r from-green-500 to-emerald-500 shadow-green-500/25 hover:shadow-green-500/30"
                 >
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                    />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                    />
+                  </svg>
                   Reveal Answers ({answeredCount}/{participantCount})
                 </button>
               )}
@@ -327,17 +509,37 @@ export default function FacilitatorSession() {
               {sessionStatus === 'revealed' && (
                 <>
                   {!isLastQuestion ? (
-                    <button
-                      onClick={handleNextQuestion}
-                      className="bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-3 rounded-lg font-medium transition-colors"
-                    >
+                    <button onClick={handleNextQuestion} className="btn-primary px-8">
                       Next Question
+                      <svg
+                        className="w-5 h-5"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M9 5l7 7-7 7"
+                        />
+                      </svg>
                     </button>
                   ) : (
-                    <button
-                      onClick={handleEndMeeting}
-                      className="bg-gray-600 hover:bg-gray-700 text-white px-8 py-3 rounded-lg font-medium transition-colors"
-                    >
+                    <button onClick={handleEndMeeting} className="btn-secondary px-8">
+                      <svg
+                        className="w-5 h-5"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M5 13l4 4L19 7"
+                        />
+                      </svg>
                       End Meeting
                     </button>
                   )}

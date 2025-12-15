@@ -53,19 +53,19 @@ export default function AnswerGroup({
   return (
     <div
       ref={setNodeRef}
-      className={`rounded-xl border-2 transition-colors ${
-        isOver ? 'border-indigo-400 bg-indigo-50' : 'border-gray-200 bg-white'
+      className={`rounded-2xl border-2 transition-all ${
+        isOver ? 'border-coral-400 bg-coral-50' : 'border-neutral-200 bg-white'
       }`}
     >
       {/* Group Header */}
-      <div className="flex items-center justify-between p-4 border-b border-gray-100">
+      <div className="flex items-center justify-between p-4 border-b border-neutral-100">
         <div className="flex items-center gap-3 flex-1 min-w-0">
           <button
             onClick={() => setIsExpanded(!isExpanded)}
-            className="text-gray-500 hover:text-gray-700"
+            className="text-neutral-400 hover:text-neutral-600 transition-colors"
           >
             <svg
-              className={`w-5 h-5 transition-transform ${isExpanded ? 'rotate-90' : ''}`}
+              className={`w-5 h-5 transition-transform duration-200 ${isExpanded ? 'rotate-90' : ''}`}
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -81,14 +81,14 @@ export default function AnswerGroup({
               onChange={(e) => setEditName(e.target.value)}
               onBlur={handleRename}
               onKeyDown={handleKeyDown}
-              className="flex-1 px-2 py-1 border border-indigo-300 rounded focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="flex-1 px-3 py-1.5 border-2 border-coral-300 rounded-lg focus:outline-none focus:border-coral-500 focus:ring-2 focus:ring-coral-500/20 text-neutral-900"
               autoFocus
             />
           ) : (
-            <h4 className="font-medium text-gray-900 truncate">{group.name}</h4>
+            <h4 className="font-medium text-neutral-900 truncate">{group.name}</h4>
           )}
 
-          <span className="flex-shrink-0 px-2 py-0.5 text-xs font-medium text-gray-600 bg-gray-100 rounded-full">
+          <span className="flex-shrink-0 px-2 py-0.5 text-xs font-medium text-neutral-600 bg-neutral-100 rounded-full">
             {group.answers.length}
           </span>
         </div>
@@ -97,7 +97,7 @@ export default function AnswerGroup({
           <div className="flex items-center gap-1">
             <button
               onClick={startEditing}
-              className="p-1.5 text-gray-400 hover:text-indigo-600 rounded"
+              className="p-2 text-neutral-400 hover:text-coral-600 hover:bg-coral-50 rounded-lg transition-colors"
               title="Rename group"
             >
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -111,7 +111,7 @@ export default function AnswerGroup({
             </button>
             <button
               onClick={onDelete}
-              className="p-1.5 text-gray-400 hover:text-red-600 rounded"
+              className="p-2 text-neutral-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
               title="Delete group"
             >
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -131,7 +131,7 @@ export default function AnswerGroup({
       {isExpanded && (
         <div className="p-4 space-y-3">
           {group.answers.length === 0 ? (
-            <p className="text-sm text-gray-500 text-center py-4">
+            <p className="text-sm text-neutral-500 text-center py-4">
               {isFacilitator ? 'Drag answers here' : 'No answers in this group'}
             </p>
           ) : (
