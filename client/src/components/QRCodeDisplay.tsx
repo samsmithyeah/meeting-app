@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { QRCodeSVG } from 'qrcode.react'
 
 interface QRCodeDisplayProps {
@@ -9,6 +9,21 @@ interface QRCodeDisplayProps {
 
 export default function QRCodeDisplay({ url, participantCode, size = 200 }: QRCodeDisplayProps) {
   const [isFullscreen, setIsFullscreen] = useState(false)
+
+  useEffect(() => {
+    if (!isFullscreen) return
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setIsFullscreen(false)
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [isFullscreen])
 
   return (
     <>
@@ -37,7 +52,7 @@ export default function QRCodeDisplay({ url, participantCode, size = 200 }: QRCo
           className="fixed inset-0 z-50 bg-white flex flex-col items-center justify-center"
           onClick={() => setIsFullscreen(false)}
         >
-          <div className="text-center">
+          <div className="text-center" onClick={(e) => e.stopPropagation()}>
             <QRCodeSVG
               value={url}
               size={Math.min(window.innerWidth, window.innerHeight) * 0.5}
@@ -50,6 +65,7 @@ export default function QRCodeDisplay({ url, participantCode, size = 200 }: QRCo
             </p>
           </div>
           <button
+            aria-label="Close fullscreen"
             onClick={() => setIsFullscreen(false)}
             className="absolute top-6 right-6 text-gray-500 hover:text-gray-700"
           >
