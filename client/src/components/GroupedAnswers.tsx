@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { DndContext, DragEndEvent, DragOverlay, DragStartEvent, pointerWithin } from '@dnd-kit/core'
 import { useDroppable } from '@dnd-kit/core'
 import AnswerGroup from './AnswerGroup'
@@ -80,17 +80,25 @@ export default function GroupedAnswers({
   const [activeAnswer, setActiveAnswer] = useState<Answer | null>(null)
   const [showCreateModal, setShowCreateModal] = useState(false)
 
-  // Find an answer by ID across all groups and ungrouped
-  const findAnswer = (id: string): Answer | null => {
+  // Build lookup maps for O(1) answer and group lookups
+  const { answerMap, answerToGroupMap } = useMemo(() => {
+    const am = new Map<string, Answer>()
+    const atgm = new Map<string, string | null>()
     for (const group of data.groups) {
-      const answer = group.answers.find((a) => a.id === id)
-      if (answer) return answer
+      for (const answer of group.answers) {
+        am.set(answer.id, answer)
+        atgm.set(answer.id, group.id)
+      }
     }
-    return data.ungrouped.find((a) => a.id === id) || null
-  }
+    for (const answer of data.ungrouped) {
+      am.set(answer.id, answer)
+      atgm.set(answer.id, null)
+    }
+    return { answerMap: am, answerToGroupMap: atgm }
+  }, [data])
 
   const handleDragStart = (event: DragStartEvent) => {
-    const answer = findAnswer(event.active.id as string)
+    const answer = answerMap.get(event.active.id as string) || null
     setActiveAnswer(answer)
   }
 
@@ -106,14 +114,8 @@ export default function GroupedAnswers({
     // Determine the target group ID (null for ungrouped)
     const targetGroupId = targetId === 'ungrouped' ? null : targetId
 
-    // Find current group of the answer
-    let currentGroupId: string | null = null
-    for (const group of data.groups) {
-      if (group.answers.some((a) => a.id === answerId)) {
-        currentGroupId = group.id
-        break
-      }
-    }
+    // Get current group of the answer from lookup map
+    const currentGroupId = answerToGroupMap.get(answerId) ?? null
 
     // Only move if the target is different
     if (currentGroupId !== targetGroupId) {
