@@ -101,6 +101,15 @@ export async function clearAnswered(meetingId: string, questionId: string): Prom
   await redis.del(sessionKeys.answered(meetingId, questionId))
 }
 
+export async function removeAnswered(
+  meetingId: string,
+  questionId: string,
+  participantId: string
+): Promise<void> {
+  const redis = getRedis()
+  await redis.srem(sessionKeys.answered(meetingId, questionId), participantId)
+}
+
 export async function setTimer(meetingId: string, endTime: number): Promise<void> {
   const redis = getRedis()
   await redis.set(sessionKeys.timerEnd(meetingId), endTime.toString())

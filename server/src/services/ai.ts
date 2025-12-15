@@ -121,7 +121,7 @@ export async function groupAnswers(
   }
 
   // For very few answers, skip AI and return single group
-  if (answers.length <= 2) {
+  if (answers.length < 4) {
     return {
       groups: [{ groupName: 'All Responses', answerIds: answers.map((a) => a.id) }],
       ungroupedIds: []

@@ -6,6 +6,7 @@ import {
   addParticipant,
   removeParticipant,
   markAnswered,
+  removeAnswered,
   clearAnswered,
   setTimer,
   clearTimer,
@@ -302,19 +303,9 @@ export function setupSocketHandlers(io: TypedServer): void {
           .eq('question_id', questionId)
           .eq('participant_id', socket.data.participantId)
 
-        // If no answers left, update Redis to mark as not answered
+        // If no answers left from this participant, remove them from answered set
         if (!remainingAnswers || remainingAnswers.length === 0) {
-          await clearAnswered(meetingId, questionId)
-          // Re-mark other participants who have answered
-          const { data: otherAnswers } = await supabase
-            .from('answers')
-            .select('participant_id')
-            .eq('question_id', questionId)
-
-          const answeredParticipants = new Set(otherAnswers?.map((a) => a.participant_id) || [])
-          for (const pid of answeredParticipants) {
-            await markAnswered(meetingId, questionId, pid)
-          }
+          await removeAnswered(meetingId, questionId, socket.data.participantId)
         }
 
         // Get updated session state
