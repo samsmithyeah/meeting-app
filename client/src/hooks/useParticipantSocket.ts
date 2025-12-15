@@ -23,7 +23,6 @@ export function useParticipantSocket(
   const [currentQuestion, setCurrentQuestion] = useState<Question | null>(null)
   const [myAnswers, setMyAnswers] = useState<MyAnswer[]>([])
   const [revealedAnswers, setRevealedAnswers] = useState<Answer[] | null>(null)
-  const [summary, setSummary] = useState('')
   const [timerEnd, setTimerEnd] = useState<number | null>(null)
   const [answeredCount, setAnsweredCount] = useState(0)
   const [totalCount, setTotalCount] = useState(0)
@@ -86,7 +85,6 @@ export function useParticipantSocket(
         setSessionStatus('answering')
         setMyAnswers([]) // Clear answers for new question
         setRevealedAnswers(null)
-        setSummary('')
         setTimerEnd(end)
       }
     )
@@ -110,7 +108,6 @@ export function useParticipantSocket(
 
     socket.on('answers-revealed', ({ answers }) => {
       setRevealedAnswers(answers)
-      setSummary('')
       setSessionStatus('revealed')
       setTimerEnd(null)
       setGroupedAnswers(null)
@@ -129,7 +126,6 @@ export function useParticipantSocket(
       setCurrentQuestion(null)
       setMyAnswers([])
       setRevealedAnswers(null)
-      setSummary('')
       setTimerEnd(null)
       setGroupedAnswers(null)
     })
@@ -205,7 +201,6 @@ export function useParticipantSocket(
     currentQuestion,
     myAnswers,
     revealedAnswers,
-    summary,
     timerEnd,
     answeredCount,
     totalCount,

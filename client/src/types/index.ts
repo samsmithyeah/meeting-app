@@ -209,7 +209,6 @@ export interface ParticipantSocketReturn {
   currentQuestion: Question | null
   myAnswers: MyAnswer[]
   revealedAnswers: Answer[] | null
-  summary: string
   timerEnd: number | null
   answeredCount: number
   totalCount: number

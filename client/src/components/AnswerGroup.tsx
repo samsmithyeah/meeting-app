@@ -88,7 +88,10 @@ export default function AnswerGroup({
         {isFacilitator && !isEditing && (
           <div className="flex items-center gap-1">
             <button
-              onClick={() => setIsEditing(true)}
+              onClick={() => {
+                setEditName(group.name)
+                setIsEditing(true)
+              }}
               className="p-1.5 text-gray-400 hover:text-indigo-600 rounded"
               title="Rename group"
             >
