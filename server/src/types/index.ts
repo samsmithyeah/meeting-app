@@ -61,7 +61,7 @@ export interface ServerToClientEvents {
   'question-started': (data: {
     questionId: string
     question: string | undefined
-    allow_multiple_answers: boolean | undefined
+    allowMultipleAnswers: boolean | undefined
     timerEnd: number | null
   }) => void
   'answer-received': () => void
@@ -77,7 +77,7 @@ export interface ServerToClientEvents {
   }) => void
   'next-question': (data: { questionIndex: number }) => void
   'meeting-started': (data: { meetingId: string }) => void
-  'meeting-ended': (data?: { meetingId: string }) => void
+  'meeting-ended': () => void
   error: (data: { message: string }) => void
 }
 

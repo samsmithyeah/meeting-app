@@ -129,7 +129,7 @@ export function setupSocketHandlers(io: TypedServer): void {
         io.to(`meeting:${meetingId}`).emit('question-started', {
           questionId,
           question: question?.text,
-          allow_multiple_answers: question?.allow_multiple_answers,
+          allowMultipleAnswers: question?.allow_multiple_answers,
           timerEnd
         })
 

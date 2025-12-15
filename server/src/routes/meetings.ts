@@ -273,7 +273,7 @@ router.post('/:id/end', async (req: AppRequest, res: Response) => {
 
     // Notify via Socket.io
     const io = req.app.get('io')
-    io.to(`meeting:${id}`).emit('meeting-ended', { meetingId: id })
+    io.to(`meeting:${id}`).emit('meeting-ended')
 
     res.json({ status: 'completed' })
   } catch (error) {

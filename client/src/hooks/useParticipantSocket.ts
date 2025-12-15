@@ -61,11 +61,11 @@ export function useParticipantSocket(
 
     socket.on(
       'question-started',
-      ({ questionId, question, allow_multiple_answers, timerEnd: end }) => {
+      ({ questionId, question, allowMultipleAnswers, timerEnd: end }) => {
         setCurrentQuestion({
           id: questionId,
           text: question || '',
-          allowMultipleAnswers: allow_multiple_answers
+          allowMultipleAnswers
         })
         setSessionStatus('answering')
         setHasAnswered(false)
