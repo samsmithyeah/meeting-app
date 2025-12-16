@@ -1,8 +1,16 @@
 import { Link } from 'react-router-dom'
+import { useAuth } from '../context/AuthContext'
+import AuthButton from '../components/AuthButton'
 
 export default function Home() {
+  const { user } = useAuth()
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
+      <div className="absolute top-4 right-4">
+        <AuthButton />
+      </div>
+
       <div className="max-w-md w-full mx-4">
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-gray-900 mb-2">Meeting Facilitator</h1>
@@ -16,6 +24,7 @@ export default function Home() {
           >
             Create a Meeting
           </Link>
+          {!user && <p className="text-xs text-gray-500 text-center -mt-2">Requires sign in</p>}
 
           <div className="relative">
             <div className="absolute inset-0 flex items-center">

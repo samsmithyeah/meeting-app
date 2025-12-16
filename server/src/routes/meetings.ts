@@ -2,7 +2,7 @@ import { Router, Request, Response } from 'express'
 import { customAlphabet } from 'nanoid'
 import { supabase } from '../config/supabase.js'
 import { setSessionStatus, clearSession } from '../config/redis.js'
-import { getFacilitatorCode } from '../utils/auth.js'
+import { getFacilitatorCode, getAuthToken, verifyAuthToken } from '../utils/auth.js'
 import type { TypedServer, CreateMeetingRequest } from '../types/index.js'
 
 const router = Router()
@@ -71,9 +71,20 @@ interface AppRequest extends Request {
   }
 }
 
-// Create a new meeting
+// Create a new meeting (requires authentication)
 router.post('/', async (req: Request<object, object, CreateMeetingRequest>, res: Response) => {
   try {
+    // Verify authentication
+    const token = getAuthToken(req)
+    if (!token) {
+      return res.status(401).json({ error: 'Authentication required' })
+    }
+
+    const authUser = await verifyAuthToken(token)
+    if (!authUser) {
+      return res.status(401).json({ error: 'Invalid or expired token' })
+    }
+
     const { title, showParticipantNames = true, questions = [] } = req.body
 
     if (!title) {
@@ -89,7 +100,8 @@ router.post('/', async (req: Request<object, object, CreateMeetingRequest>, res:
       p_facilitator_code: facilitatorCode,
       p_participant_code: participantCode,
       p_show_participant_names: showParticipantNames,
-      p_questions: questions
+      p_questions: questions,
+      p_created_by: authUser.userId
     })
 
     if (error) {
