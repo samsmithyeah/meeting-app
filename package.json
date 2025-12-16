@@ -18,11 +18,22 @@
     "knip": "knip",
     "knip:fix": "knip --fix",
     "check:all": "npm run typecheck && npm run lint && npm run format:check && npm run knip",
-    "fix:all": "npm run lint:fix && npm run format && npm run knip:fix"
+    "fix:all": "npm run lint:fix && npm run format && npm run knip:fix",
+    "test:e2e": "OPENAI_BASE_URL=http://localhost:8080/v1 playwright test",
+    "test:e2e:ui": "OPENAI_BASE_URL=http://localhost:8080/v1 playwright test --ui",
+    "test:e2e:headed": "OPENAI_BASE_URL=http://localhost:8080/v1 playwright test --headed",
+    "test:e2e:debug": "OPENAI_BASE_URL=http://localhost:8080/v1 playwright test --debug",
+    "test:e2e:report": "playwright show-report",
+    "test:e2e:wiremock": "npm run wiremock:start && wait-on http-get://localhost:8080/__admin/ && OPENAI_BASE_URL=http://localhost:8080/v1 playwright test; npm run wiremock:stop",
+    "wiremock:start": "docker compose -f docker-compose.e2e.yml up -d",
+    "wiremock:stop": "docker compose -f docker-compose.e2e.yml down",
+    "wiremock:logs": "docker compose -f docker-compose.e2e.yml logs -f"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",
+    "@playwright/test": "^1.57.0",
     "concurrently": "^8.2.2",
+    "dotenv": "^17.2.3",
     "eslint": "^9.39.1",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-react": "^7.37.5",

@@ -123,7 +123,11 @@ export default function Login() {
           <h1 className="text-2xl font-bold text-gray-900 mb-2">Sign In</h1>
           <p className="text-gray-600 mb-6">Sign in to create and manage meetings</p>
 
-          {error && <div className="bg-red-50 text-red-600 p-3 rounded-lg mb-4">{error}</div>}
+          {error && (
+            <div role="alert" className="bg-red-50 text-red-600 p-3 rounded-lg mb-4">
+              {error}
+            </div>
+          )}
 
           <form onSubmit={handleSubmit} className="space-y-4" noValidate>
             <div>

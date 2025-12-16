@@ -1,0 +1,11 @@
+services:
+  wiremock:
+    image: wiremock/wiremock:3.9.2
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./e2e/wiremock/mappings:/home/wiremock/mappings
+      - ./e2e/wiremock/__files:/home/wiremock/__files
+    command:
+      - "--global-response-templating"
+      - "--verbose"

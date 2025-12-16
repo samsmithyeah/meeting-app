@@ -41,7 +41,10 @@ export default function AnswerReveal({
           </div>
         </div>
       ) : summary ? (
-        <div className="bg-gradient-to-r from-purple-50 to-indigo-50 rounded-xl p-6 border border-purple-100">
+        <section
+          aria-label="AI Summary"
+          className="bg-gradient-to-r from-purple-50 to-indigo-50 rounded-xl p-6 border border-purple-100"
+        >
           <div className="flex items-center gap-2 mb-3">
             <svg
               className="w-5 h-5 text-purple-600"
@@ -59,7 +62,7 @@ export default function AnswerReveal({
             <h3 className="font-semibold text-purple-900">AI Summary</h3>
           </div>
           <p className="text-purple-800">{summary}</p>
-        </div>
+        </section>
       ) : null}
 
       {/* Group Answers Button (only for facilitator, only when not yet grouped) */}

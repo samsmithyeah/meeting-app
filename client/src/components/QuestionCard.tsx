@@ -38,7 +38,11 @@ export default function QuestionCard({
     <div className="bg-white rounded-xl shadow-lg p-6">
       {/* Timer */}
       {timeLeft !== null && status === 'answering' && (
-        <div className={`mb-4 text-center ${timeLeft <= 10 ? 'text-red-600' : 'text-gray-600'}`}>
+        <div
+          role="timer"
+          aria-label={`Time remaining: ${formatTime(timeLeft)}`}
+          className={`mb-4 text-center ${timeLeft <= 10 ? 'text-red-600' : 'text-gray-600'}`}
+        >
           <div className="text-3xl font-mono font-bold">{formatTime(timeLeft)}</div>
           <div className="text-sm">remaining</div>
         </div>

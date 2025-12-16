@@ -115,7 +115,11 @@ export default function JoinMeeting() {
           <h1 className="text-2xl font-bold text-gray-900 mb-2">Join a Meeting</h1>
           <p className="text-gray-600 mb-6">Enter the code shared by your facilitator</p>
 
-          {error && <div className="bg-red-50 text-red-600 p-3 rounded-lg mb-4">{error}</div>}
+          {error && (
+            <div role="alert" className="bg-red-50 text-red-600 p-3 rounded-lg mb-4">
+              {error}
+            </div>
+          )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
@@ -134,7 +138,7 @@ export default function JoinMeeting() {
             </div>
 
             {meetingInfo && !meetingInfo.isFacilitator && (
-              <div className="bg-green-50 text-green-700 p-3 rounded-lg">
+              <div role="status" className="bg-green-50 text-green-700 p-3 rounded-lg">
                 Found: <strong>{meetingInfo.title}</strong>
               </div>
             )}

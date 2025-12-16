@@ -82,7 +82,7 @@ export default function ParticipantSession() {
       <main className="max-w-lg mx-auto px-4 py-6">
         {/* Waiting for meeting to start */}
         {meetingStatus === 'draft' && (
-          <div className="bg-white rounded-xl shadow p-8 text-center">
+          <div role="status" className="bg-white rounded-xl shadow p-8 text-center">
             <div className="animate-pulse mb-4">
               <div className="w-16 h-16 bg-indigo-100 rounded-full mx-auto flex items-center justify-center">
                 <svg
@@ -107,7 +107,7 @@ export default function ParticipantSession() {
 
         {/* Meeting active - waiting for question */}
         {meetingStatus === 'active' && sessionStatus === 'waiting' && !currentQuestion && (
-          <div className="bg-white rounded-xl shadow p-8 text-center">
+          <div role="status" className="bg-white rounded-xl shadow p-8 text-center">
             <div className="animate-pulse mb-4">
               <div className="w-16 h-16 bg-green-100 rounded-full mx-auto flex items-center justify-center">
                 <svg
@@ -171,7 +171,7 @@ export default function ParticipantSession() {
               showNames={meeting.showParticipantNames ?? true}
               isFacilitator={false}
             />
-            <div className="bg-blue-50 rounded-xl p-4 text-center">
+            <div role="status" className="bg-blue-50 rounded-xl p-4 text-center">
               <p className="text-blue-800">Waiting for facilitator to continue...</p>
             </div>
           </div>

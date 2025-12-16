@@ -117,7 +117,11 @@ export default function CreateMeeting() {
         <div className="bg-white rounded-xl shadow-lg p-8">
           <h1 className="text-2xl font-bold text-gray-900 mb-6">Create a Meeting</h1>
 
-          {error && <div className="bg-red-50 text-red-600 p-3 rounded-lg mb-4">{error}</div>}
+          {error && (
+            <div role="alert" className="bg-red-50 text-red-600 p-3 rounded-lg mb-4">
+              {error}
+            </div>
+          )}
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
