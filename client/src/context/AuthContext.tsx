@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState, useCallback, type ReactNode } from 'react'
-import type { User, Session } from '@supabase/supabase-js'
+import type { User, Session, AuthError } from '@supabase/supabase-js'
 import { supabase } from '../config/supabase'
 
 interface AuthContextValue {
@@ -7,9 +7,9 @@ interface AuthContextValue {
   session: Session | null
   loading: boolean
   displayName: string | null
-  signIn: (email: string, password: string) => Promise<{ error: Error | null }>
-  signUp: (email: string, password: string, name: string) => Promise<{ error: Error | null }>
-  signInWithGoogle: () => Promise<{ error: Error | null }>
+  signIn: (email: string, password: string) => Promise<{ error: AuthError | null }>
+  signUp: (email: string, password: string, name: string) => Promise<{ error: AuthError | null }>
+  signInWithGoogle: () => Promise<{ error: AuthError | null }>
   signOut: () => Promise<void>
 }
 
@@ -25,14 +25,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session)
-      setUser(session?.user ?? null)
-      setLoading(false)
-    })
-
-    // Listen for auth changes
+    // Listen for auth changes. The callback is invoked immediately with the
+    // current session, so we don't need to call getSession() separately.
     const {
       data: { subscription }
     } = supabase.auth.onAuthStateChange((_event, session) => {
@@ -49,7 +43,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       email,
       password
     })
-    return { error: error ? new Error(error.message) : null }
+    return { error }
   }, [])
 
   const signUp = useCallback(async (email: string, password: string, name: string) => {
@@ -62,7 +56,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         }
       }
     })
-    return { error: error ? new Error(error.message) : null }
+    return { error }
   }, [])
 
   const signInWithGoogle = useCallback(async () => {
@@ -72,7 +66,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         redirectTo: `${window.location.origin}/`
       }
     })
-    return { error: error ? new Error(error.message) : null }
+    return { error }
   }, [])
 
   const signOut = useCallback(async () => {

@@ -3,19 +3,20 @@ import { supabase } from '../config/supabase.js'
 interface RequestWithHeaders {
   headers: {
     authorization?: string
+    'x-facilitator-code'?: string
   }
   body?: unknown
 }
 
 /**
- * Extract facilitator code from Authorization header or request body.
- * Does NOT check query params for security reasons (URLs can be logged).
+ * Extract facilitator code from X-Facilitator-Code header or request body.
+ * Note: Authorization header is now reserved for JWT tokens.
  */
 export function getFacilitatorCode(req: RequestWithHeaders): string | undefined {
-  // Check Authorization header first (Bearer token)
-  const authHeader = req.headers.authorization
-  if (authHeader?.startsWith('Bearer ')) {
-    return authHeader.slice(7)
+  // Check X-Facilitator-Code header first
+  const facilitatorHeader = req.headers['x-facilitator-code']
+  if (facilitatorHeader) {
+    return facilitatorHeader
   }
   // Fall back to body for POST/PUT requests
   return (req.body as { facilitatorCode?: string })?.facilitatorCode

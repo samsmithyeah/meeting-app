@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, type FormEvent, type ChangeEvent } from 'react'
+import { useState, useEffect, useCallback, useRef, type FormEvent, type ChangeEvent } from 'react'
 import { useNavigate, useParams, Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import type { Meeting } from '../types'
@@ -12,6 +12,7 @@ export default function JoinMeeting() {
   const [isJoining, setIsJoining] = useState(false)
   const [error, setError] = useState('')
   const [meetingInfo, setMeetingInfo] = useState<Meeting | null>(null)
+  const hasAutoFilledName = useRef(false)
 
   const fetchMeetingInfo = useCallback(
     async (meetingCode: string) => {
@@ -43,10 +44,11 @@ export default function JoinMeeting() {
     }
   }, [urlCode, fetchMeetingInfo])
 
-  // Auto-fill name from user profile if logged in
+  // Auto-fill name from user profile if logged in (only once)
   useEffect(() => {
-    if (displayName && !name) {
+    if (displayName && !hasAutoFilledName.current) {
       setName(displayName)
+      hasAutoFilledName.current = true
     }
   }, [displayName])
 
