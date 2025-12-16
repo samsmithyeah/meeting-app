@@ -1,4 +1,8 @@
+import { motion } from 'framer-motion'
+import { Sparkles, Layers, Loader2 } from 'lucide-react'
 import GroupedAnswers from './GroupedAnswers'
+import { Button } from './ui/Button'
+import { Card, CardContent } from './ui/Card'
 import type { AnswerRevealProps } from '../types'
 
 export default function AnswerReveal({
@@ -16,97 +20,73 @@ export default function AnswerReveal({
   onDeleteGroup
 }: AnswerRevealProps) {
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       {/* AI Summary */}
-      {isLoadingSummary ? (
-        <div className="bg-gradient-to-r from-purple-50 to-indigo-50 rounded-xl p-6 border border-purple-100">
-          <div className="flex items-center gap-2">
-            <svg className="w-5 h-5 text-purple-600 animate-spin" fill="none" viewBox="0 0 24 24">
-              <circle
-                className="opacity-25"
-                cx="12"
-                cy="12"
-                r="10"
-                stroke="currentColor"
-                strokeWidth="4"
-              />
-              <path
-                className="opacity-75"
-                fill="currentColor"
-                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-              />
-            </svg>
-            <span className="text-purple-700">Generating AI summary...</span>
-          </div>
-        </div>
-      ) : summary ? (
-        <div className="bg-gradient-to-r from-purple-50 to-indigo-50 rounded-xl p-6 border border-purple-100">
-          <div className="flex items-center gap-2 mb-3">
-            <svg
-              className="w-5 h-5 text-purple-600"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"
-              />
-            </svg>
-            <h3 className="font-semibold text-purple-900">AI Summary</h3>
-          </div>
-          <p className="text-purple-800">{summary}</p>
-        </div>
-      ) : null}
+      {(isLoadingSummary || summary) && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+        >
+          <Card className="border-purple-200 bg-gradient-to-r from-purple-50/50 to-indigo-50/50 backdrop-blur-sm overflow-hidden">
+            <CardContent className="p-6">
+              <div className="flex items-center gap-2 mb-3">
+                {isLoadingSummary ? (
+                  <Loader2 className="w-5 h-5 text-purple-600 animate-spin" />
+                ) : (
+                  <Sparkles className="w-5 h-5 text-purple-600" />
+                )}
+                <h3 className="font-semibold text-purple-900">
+                  {isLoadingSummary ? 'Generating AI summary...' : 'AI Summary'}
+                </h3>
+              </div>
+              {summary && (
+                <motion.p 
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="text-purple-800 leading-relaxed"
+                >
+                  {summary}
+                </motion.p>
+              )}
+            </CardContent>
+          </Card>
+        </motion.div>
+      )}
 
       {/* Group Answers Button (only for facilitator, only when not yet grouped) */}
       {isFacilitator && !groupedAnswers && onGroupAnswers && (
-        <div className="flex justify-center">
-          <button
+        <motion.div 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="flex justify-center"
+        >
+          <Button
             onClick={onGroupAnswers}
             disabled={isGrouping}
-            className="flex items-center gap-2 px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-400 text-white rounded-lg font-medium transition-colors"
+            size="lg"
+            className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-200"
           >
             {isGrouping ? (
               <>
-                <svg className="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
-                  <circle
-                    className="opacity-25"
-                    cx="12"
-                    cy="12"
-                    r="10"
-                    stroke="currentColor"
-                    strokeWidth="4"
-                  />
-                  <path
-                    className="opacity-75"
-                    fill="currentColor"
-                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                  />
-                </svg>
+                <Loader2 className="w-5 h-5 mr-2 animate-spin" />
                 Grouping...
               </>
             ) : (
               <>
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
-                  />
-                </svg>
-                Group Answers
+                <Layers className="w-5 h-5 mr-2" />
+                Group Answers with AI
               </>
             )}
-          </button>
-        </div>
+          </Button>
+        </motion.div>
       )}
 
       {/* Answers - either grouped or flat */}
-      <div className="bg-white rounded-xl shadow-lg p-6">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.1 }}
+      >
         {groupedAnswers ? (
           <GroupedAnswers
             data={groupedAnswers}
@@ -118,21 +98,34 @@ export default function AnswerReveal({
             onDeleteGroup={onDeleteGroup}
           />
         ) : (
-          <>
-            <h3 className="font-semibold text-gray-900 mb-4">All Responses ({answers.length})</h3>
-            <div className="space-y-3">
-              {answers.map((answer) => (
-                <div key={answer.id} className="p-4 bg-gray-50 rounded-lg border border-gray-100">
-                  <p className="text-gray-800">{answer.text}</p>
-                  {showNames && answer.participantName && (
-                    <p className="text-sm text-gray-500 mt-2">— {answer.participantName}</p>
-                  )}
-                </div>
-              ))}
-            </div>
-          </>
+          <Card className="border-border/50 shadow-lg bg-card/50 backdrop-blur-sm">
+            <CardContent className="p-6">
+              <h3 className="font-semibold text-foreground mb-4 flex items-center">
+                All Responses 
+                <span className="ml-2 text-xs bg-secondary text-secondary-foreground px-2 py-1 rounded-full">
+                  {answers.length}
+                </span>
+              </h3>
+              <div className="grid gap-3 sm:grid-cols-2">
+                {answers.map((answer, index) => (
+                  <motion.div
+                    key={answer.id}
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ delay: index * 0.05 }}
+                    className="p-4 bg-background/50 rounded-lg border border-border/50 hover:border-primary/30 transition-colors"
+                  >
+                    <p className="text-foreground">{answer.text}</p>
+                    {showNames && answer.participantName && (
+                      <p className="text-xs text-muted-foreground mt-2 font-medium">— {answer.participantName}</p>
+                    )}
+                  </motion.div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
         )}
-      </div>
+      </motion.div>
     </div>
   )
 }

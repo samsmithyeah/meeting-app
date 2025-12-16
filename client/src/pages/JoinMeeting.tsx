@@ -1,5 +1,10 @@
 import { useState, useEffect, useCallback, type FormEvent, type ChangeEvent } from 'react'
 import { useNavigate, useParams, Link } from 'react-router-dom'
+import { motion } from 'framer-motion'
+import { ArrowLeft, Loader2, CheckCircle2 } from 'lucide-react'
+import { Button } from '../components/ui/Button'
+import { Input } from '../components/ui/Input'
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../components/ui/Card'
 import type { Meeting } from '../types'
 
 export default function JoinMeeting() {
@@ -94,63 +99,100 @@ export default function JoinMeeting() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
-      <div className="max-w-md w-full mx-4">
-        <Link to="/" className="text-indigo-600 hover:text-indigo-800 mb-6 inline-block">
-          &larr; Back to Home
+    <div className="min-h-screen bg-background text-foreground flex flex-col items-center justify-center p-4">
+      <div className="w-full max-w-md">
+        <Link 
+          to="/" 
+          className="inline-flex items-center text-sm text-muted-foreground hover:text-primary mb-8 transition-colors"
+        >
+          <ArrowLeft className="w-4 h-4 mr-2" />
+          Back to Home
         </Link>
 
-        <div className="bg-white rounded-xl shadow-lg p-8">
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">Join a Meeting</h1>
-          <p className="text-gray-600 mb-6">Enter the code shared by your facilitator</p>
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.4 }}
+        >
+          <Card className="border-border/50 shadow-xl bg-card/50 backdrop-blur-sm">
+            <CardHeader>
+              <CardTitle className="text-2xl text-center">Join a Meeting</CardTitle>
+              <CardDescription className="text-center">
+                Enter the code shared by your facilitator
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {error && (
+                <div className="bg-destructive/10 text-destructive text-sm p-3 rounded-md mb-6 text-center">
+                  {error}
+                </div>
+              )}
 
-          {error && <div className="bg-red-50 text-red-600 p-3 rounded-lg mb-4">{error}</div>}
+              <form onSubmit={handleSubmit} className="space-y-6">
+                <div className="space-y-2">
+                  <label htmlFor="code" className="text-sm font-medium text-center block">
+                    Meeting Code
+                  </label>
+                  <Input
+                    type="text"
+                    id="code"
+                    value={code}
+                    onChange={handleCodeChange}
+                    maxLength={6}
+                    className="text-3xl text-center tracking-[0.5em] font-mono h-16 uppercase"
+                    placeholder="ABC123"
+                    autoComplete="off"
+                  />
+                </div>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label htmlFor="code" className="block text-sm font-medium text-gray-700 mb-1">
-                Meeting Code
-              </label>
-              <input
-                type="text"
-                id="code"
-                value={code}
-                onChange={handleCodeChange}
-                maxLength={6}
-                className="w-full px-4 py-3 text-2xl text-center tracking-widest font-mono border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 uppercase"
-                placeholder="ABC123"
-              />
-            </div>
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ 
+                    opacity: meetingInfo && !meetingInfo.isFacilitator ? 1 : 0,
+                    height: meetingInfo && !meetingInfo.isFacilitator ? 'auto' : 0
+                  }}
+                  className="overflow-hidden"
+                >
+                  {meetingInfo && !meetingInfo.isFacilitator && (
+                    <div className="bg-primary/10 text-primary p-3 rounded-lg flex items-center justify-center text-sm font-medium">
+                      <CheckCircle2 className="w-4 h-4 mr-2" />
+                      Found: {meetingInfo.title}
+                    </div>
+                  )}
+                </motion.div>
 
-            {meetingInfo && !meetingInfo.isFacilitator && (
-              <div className="bg-green-50 text-green-700 p-3 rounded-lg">
-                Found: <strong>{meetingInfo.title}</strong>
-              </div>
-            )}
+                <div className="space-y-2">
+                  <label htmlFor="name" className="text-sm font-medium block">
+                    Your Name
+                  </label>
+                  <Input
+                    type="text"
+                    id="name"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    className="h-11"
+                    placeholder="Enter your name"
+                  />
+                </div>
 
-            <div>
-              <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
-                Your Name
-              </label>
-              <input
-                type="text"
-                id="name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                placeholder="Enter your name"
-              />
-            </div>
-
-            <button
-              type="submit"
-              disabled={isJoining || code.length !== 6 || !name.trim()}
-              className="w-full bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-400 text-white font-semibold py-3 px-6 rounded-lg transition-colors"
-            >
-              {isJoining ? 'Joining...' : 'Join Meeting'}
-            </button>
-          </form>
-        </div>
+                <Button
+                  type="submit"
+                  disabled={isJoining || code.length !== 6 || !name.trim()}
+                  className="w-full h-11 text-base"
+                >
+                  {isJoining ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Joining...
+                    </>
+                  ) : (
+                    'Join Meeting'
+                  )}
+                </Button>
+              </form>
+            </CardContent>
+          </Card>
+        </motion.div>
       </div>
     </div>
   )

@@ -1,4 +1,6 @@
 import { useDraggable } from '@dnd-kit/core'
+import { GripVertical } from 'lucide-react'
+import { cn } from '../lib/utils'
 import type { Answer } from '../types'
 
 interface DraggableAnswerProps {
@@ -24,23 +26,23 @@ export default function DraggableAnswer({ answer, showName, isDraggable }: Dragg
     <div
       ref={setNodeRef}
       style={style}
-      className={`p-4 bg-gray-50 rounded-lg border border-gray-100 ${
-        isDragging ? 'shadow-lg opacity-90' : ''
-      } ${isDraggable ? 'cursor-grab active:cursor-grabbing' : ''}`}
+      className={cn(
+        "p-3 bg-background rounded-lg border border-border shadow-sm transition-all duration-200",
+        isDragging && "shadow-xl ring-2 ring-primary/20 opacity-90 scale-105 rotate-1",
+        isDraggable && "cursor-grab active:cursor-grabbing hover:border-primary/50"
+      )}
       {...(isDraggable ? { ...listeners, ...attributes } : {})}
     >
       <div className="flex items-start gap-3">
         {isDraggable && (
-          <div className="flex-shrink-0 pt-1 text-gray-400">
-            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-              <path d="M7 2a2 2 0 1 0 .001 4.001A2 2 0 0 0 7 2zm0 6a2 2 0 1 0 .001 4.001A2 2 0 0 0 7 8zm0 6a2 2 0 1 0 .001 4.001A2 2 0 0 0 7 14zm6-8a2 2 0 1 0-.001-4.001A2 2 0 0 0 13 6zm0 2a2 2 0 1 0 .001 4.001A2 2 0 0 0 13 8zm0 6a2 2 0 1 0 .001 4.001A2 2 0 0 0 13 14z" />
-            </svg>
+          <div className="flex-shrink-0 pt-1 text-muted-foreground/50">
+            <GripVertical className="w-4 h-4" />
           </div>
         )}
         <div className="flex-1 min-w-0">
-          <p className="text-gray-800">{answer.text}</p>
+          <p className="text-foreground text-sm leading-relaxed">{answer.text}</p>
           {showName && answer.participantName && (
-            <p className="text-sm text-gray-500 mt-2">— {answer.participantName}</p>
+            <p className="text-xs text-muted-foreground mt-1.5 font-medium">— {answer.participantName}</p>
           )}
         </div>
       </div>

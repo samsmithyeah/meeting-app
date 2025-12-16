@@ -1,5 +1,10 @@
 import { useState, type FormEvent, type ChangeEvent } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
+import { motion, AnimatePresence } from 'framer-motion'
+import { Plus, Trash2, ArrowLeft, Clock, Users, Loader2 } from 'lucide-react'
+import { Button } from '../components/ui/Button'
+import { Input } from '../components/ui/Input'
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../components/ui/Card'
 
 interface QuestionForm {
   id: string
@@ -87,126 +92,188 @@ export default function CreateMeeting() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-2xl mx-auto px-4">
-        <Link to="/" className="text-indigo-600 hover:text-indigo-800 mb-6 inline-block">
-          &larr; Back to Home
+    <div className="min-h-screen bg-background text-foreground py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-3xl mx-auto">
+        <Link 
+          to="/" 
+          className="inline-flex items-center text-sm text-muted-foreground hover:text-primary mb-8 transition-colors"
+        >
+          <ArrowLeft className="w-4 h-4 mr-2" />
+          Back to Home
         </Link>
 
-        <div className="bg-white rounded-xl shadow-lg p-8">
-          <h1 className="text-2xl font-bold text-gray-900 mb-6">Create a Meeting</h1>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+        >
+          <Card className="border-border/50 shadow-xl bg-card/50 backdrop-blur-sm">
+            <CardHeader>
+              <CardTitle className="text-3xl">Create a Meeting</CardTitle>
+              <CardDescription>
+                Set up your session details and questions.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {error && (
+                <div className="bg-destructive/10 text-destructive text-sm p-3 rounded-md mb-6">
+                  {error}
+                </div>
+              )}
 
-          {error && <div className="bg-red-50 text-red-600 p-3 rounded-lg mb-4">{error}</div>}
+              <form onSubmit={handleSubmit} className="space-y-8">
+                <div className="space-y-4">
+                  <div>
+                    <label htmlFor="title" className="block text-sm font-medium mb-2">
+                      Meeting Title
+                    </label>
+                    <Input
+                      id="title"
+                      value={title}
+                      onChange={(e) => setTitle(e.target.value)}
+                      placeholder="e.g., Sprint Retrospective"
+                      className="text-lg py-6"
+                      autoFocus
+                    />
+                  </div>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div>
-              <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-1">
-                Meeting Title
-              </label>
-              <input
-                type="text"
-                id="title"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                placeholder="e.g., Sprint Retrospective"
-              />
-            </div>
-
-            <div className="flex items-center">
-              <input
-                type="checkbox"
-                id="showNames"
-                checked={showParticipantNames}
-                onChange={(e) => setShowParticipantNames(e.target.checked)}
-                className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
-              />
-              <label htmlFor="showNames" className="ml-2 text-sm text-gray-700">
-                Show participant names with answers
-              </label>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-3">Questions</label>
-              <div className="space-y-4">
-                {questions.map((question, index) => (
-                  <div key={question.id} className="p-4 border border-gray-200 rounded-lg">
-                    <div className="flex gap-2 mb-3">
-                      <span className="text-sm font-medium text-gray-500 mt-2">{index + 1}.</span>
+                  <div className="flex items-center space-x-3 p-4 rounded-lg border border-border bg-muted/30">
+                    <div className="flex items-center h-5">
                       <input
-                        type="text"
-                        value={question.text}
-                        onChange={(e) => updateQuestion(question.id, 'text', e.target.value)}
-                        className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                        placeholder="Enter your question"
+                        type="checkbox"
+                        id="showNames"
+                        checked={showParticipantNames}
+                        onChange={(e) => setShowParticipantNames(e.target.checked)}
+                        className="h-4 w-4 rounded border-input bg-background text-primary focus:ring-ring"
                       />
-                      {questions.length > 1 && (
-                        <button
-                          type="button"
-                          onClick={() => removeQuestion(question.id)}
-                          className="text-red-500 hover:text-red-700 px-2"
-                        >
-                          Remove
-                        </button>
-                      )}
                     </div>
-
-                    <div className="flex flex-wrap gap-4 ml-6">
-                      <label className="flex items-center text-sm text-gray-600">
-                        <input
-                          type="checkbox"
-                          checked={question.allowMultipleAnswers}
-                          onChange={(e) =>
-                            updateQuestion(question.id, 'allowMultipleAnswers', e.target.checked)
-                          }
-                          className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded mr-2"
-                        />
-                        Allow multiple answers
+                    <div className="flex-1">
+                      <label htmlFor="showNames" className="text-sm font-medium cursor-pointer flex items-center">
+                        <Users className="w-4 h-4 mr-2 text-muted-foreground" />
+                        Show participant names
                       </label>
-
-                      <div className="flex items-center text-sm text-gray-600">
-                        <label className="mr-2">Time limit:</label>
-                        <select
-                          value={question.timeLimitSeconds || ''}
-                          onChange={(e: ChangeEvent<HTMLSelectElement>) =>
-                            updateQuestion(
-                              question.id,
-                              'timeLimitSeconds',
-                              e.target.value ? parseInt(e.target.value) : null
-                            )
-                          }
-                          className="px-2 py-1 border border-gray-300 rounded focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                        >
-                          <option value="">No limit</option>
-                          <option value="30">30 seconds</option>
-                          <option value="60">1 minute</option>
-                          <option value="120">2 minutes</option>
-                          <option value="300">5 minutes</option>
-                        </select>
-                      </div>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        If unchecked, answers will be anonymous.
+                      </p>
                     </div>
                   </div>
-                ))}
-              </div>
+                </div>
 
-              <button
-                type="button"
-                onClick={addQuestion}
-                className="mt-4 text-indigo-600 hover:text-indigo-800 font-medium"
-              >
-                + Add Question
-              </button>
-            </div>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <label className="text-sm font-medium">Questions</label>
+                    <span className="text-xs text-muted-foreground">
+                      {questions.length} question{questions.length !== 1 ? 's' : ''}
+                    </span>
+                  </div>
+                  
+                  <div className="space-y-4">
+                    <AnimatePresence initial={false}>
+                      {questions.map((question, index) => (
+                        <motion.div
+                          key={question.id}
+                          initial={{ opacity: 0, height: 0 }}
+                          animate={{ opacity: 1, height: 'auto' }}
+                          exit={{ opacity: 0, height: 0 }}
+                          transition={{ duration: 0.2 }}
+                        >
+                          <div className="p-6 rounded-xl border border-border bg-card hover:border-primary/50 transition-colors group relative">
+                            <div className="absolute top-4 left-4 text-xs font-medium text-muted-foreground/50">
+                              Q{index + 1}
+                            </div>
+                            
+                            <div className="mt-4 space-y-4">
+                              <Input
+                                value={question.text}
+                                onChange={(e) => updateQuestion(question.id, 'text', e.target.value)}
+                                placeholder="Enter your question"
+                                className="bg-background"
+                              />
+                              
+                              <div className="flex flex-wrap gap-4 pt-2">
+                                <label className="flex items-center text-sm text-muted-foreground cursor-pointer hover:text-foreground transition-colors">
+                                  <input
+                                    type="checkbox"
+                                    checked={question.allowMultipleAnswers}
+                                    onChange={(e) =>
+                                      updateQuestion(question.id, 'allowMultipleAnswers', e.target.checked)
+                                    }
+                                    className="h-4 w-4 rounded border-input bg-background text-primary focus:ring-ring mr-2"
+                                  />
+                                  Allow multiple answers
+                                </label>
 
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="w-full bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-400 text-white font-semibold py-3 px-6 rounded-lg transition-colors"
-            >
-              {isSubmitting ? 'Creating...' : 'Create Meeting'}
-            </button>
-          </form>
-        </div>
+                                <div className="flex items-center text-sm text-muted-foreground">
+                                  <Clock className="w-4 h-4 mr-2" />
+                                  <select
+                                    value={question.timeLimitSeconds || ''}
+                                    onChange={(e: ChangeEvent<HTMLSelectElement>) =>
+                                      updateQuestion(
+                                        question.id,
+                                        'timeLimitSeconds',
+                                        e.target.value ? parseInt(e.target.value) : null
+                                      )
+                                    }
+                                    className="bg-transparent border-none text-sm focus:ring-0 cursor-pointer hover:text-foreground transition-colors pr-8"
+                                  >
+                                    <option value="">No time limit</option>
+                                    <option value="30">30 seconds</option>
+                                    <option value="60">1 minute</option>
+                                    <option value="120">2 minutes</option>
+                                    <option value="300">5 minutes</option>
+                                  </select>
+                                </div>
+                              </div>
+                            </div>
+
+                            {questions.length > 1 && (
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => removeQuestion(question.id)}
+                                className="absolute top-2 right-2 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
+                            )}
+                          </div>
+                        </motion.div>
+                      ))}
+                    </AnimatePresence>
+                  </div>
+
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={addQuestion}
+                    className="w-full border-dashed"
+                  >
+                    <Plus className="w-4 h-4 mr-2" />
+                    Add Another Question
+                  </Button>
+                </div>
+
+                <div className="pt-6 border-t border-border">
+                  <Button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="w-full text-lg py-6"
+                  >
+                    {isSubmitting ? (
+                      <>
+                        <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                        Creating...
+                      </>
+                    ) : (
+                      'Create Meeting'
+                    )}
+                  </Button>
+                </div>
+              </form>
+            </CardContent>
+          </Card>
+        </motion.div>
       </div>
     </div>
   )

@@ -1,9 +1,12 @@
 import { useState, useMemo } from 'react'
 import { DndContext, DragEndEvent, DragOverlay, DragStartEvent, pointerWithin } from '@dnd-kit/core'
 import { useDroppable } from '@dnd-kit/core'
+import { Plus } from 'lucide-react'
 import AnswerGroup from './AnswerGroup'
 import DraggableAnswer from './DraggableAnswer'
 import CreateGroupModal from './CreateGroupModal'
+import { Button } from './ui/Button'
+import { cn } from '../lib/utils'
 import type { Answer, GroupedAnswersData } from '../types'
 
 interface GroupedAnswersProps {
@@ -36,23 +39,28 @@ function UngroupedSection({
   return (
     <div
       ref={setNodeRef}
-      className={`rounded-xl border-2 border-dashed transition-colors ${
-        isOver ? 'border-gray-400 bg-gray-100' : 'border-gray-300 bg-gray-50'
-      }`}
+      className={cn(
+        "rounded-xl border-2 border-dashed transition-all duration-200",
+        isOver 
+          ? "border-primary/50 bg-primary/5 shadow-inner" 
+          : "border-border bg-card/30 hover:border-border/80"
+      )}
     >
-      <div className="p-4 border-b border-gray-200">
+      <div className="p-4 border-b border-border/50">
         <div className="flex items-center gap-2">
-          <h4 className="font-medium text-gray-700">Ungrouped</h4>
-          <span className="px-2 py-0.5 text-xs font-medium text-gray-600 bg-gray-200 rounded-full">
+          <h4 className="font-medium text-foreground">Ungrouped</h4>
+          <span className="px-2 py-0.5 text-xs font-medium text-muted-foreground bg-secondary rounded-full">
             {answers.length}
           </span>
         </div>
       </div>
-      <div className="p-4 space-y-3">
+      <div className="p-4 space-y-3 min-h-[100px]">
         {answers.length === 0 ? (
-          <p className="text-sm text-gray-500 text-center py-4">
-            {isFacilitator ? 'Drag answers here to ungroup them' : 'No ungrouped answers'}
-          </p>
+          <div className="h-full flex items-center justify-center">
+            <p className="text-sm text-muted-foreground text-center">
+              {isFacilitator ? 'Drag answers here to ungroup them' : 'No ungrouped answers'}
+            </p>
+          </div>
         ) : (
           answers.map((answer) => (
             <DraggableAnswer
@@ -127,24 +135,24 @@ export default function GroupedAnswers({
     data.groups.reduce((sum, g) => sum + g.answers.length, 0) + data.ungrouped.length
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h3 className="font-semibold text-gray-900">Grouped Responses ({totalAnswers})</h3>
+        <h3 className="font-semibold text-foreground flex items-center">
+          Grouped Responses 
+          <span className="ml-2 text-xs bg-secondary text-secondary-foreground px-2 py-1 rounded-full">
+            {totalAnswers}
+          </span>
+        </h3>
         {isFacilitator && (
-          <button
+          <Button
             onClick={() => setShowCreateModal(true)}
-            className="flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50 rounded-lg"
+            size="sm"
+            variant="outline"
+            className="h-8"
           >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M12 4v16m8-8H4"
-              />
-            </svg>
+            <Plus className="w-4 h-4 mr-1" />
             New Group
-          </button>
+          </Button>
         )}
       </div>
 
@@ -153,17 +161,19 @@ export default function GroupedAnswers({
         onDragStart={handleDragStart}
         onDragEnd={handleDragEnd}
       >
-        <div className="space-y-4">
-          {data.groups.map((group) => (
-            <AnswerGroup
-              key={group.id}
-              group={group}
-              showNames={showNames}
-              isFacilitator={isFacilitator}
-              onRename={onRenameGroup ? (name) => onRenameGroup(group.id, name) : undefined}
-              onDelete={onDeleteGroup ? () => onDeleteGroup(group.id) : undefined}
-            />
-          ))}
+        <div className="space-y-6">
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {data.groups.map((group) => (
+              <AnswerGroup
+                key={group.id}
+                group={group}
+                showNames={showNames}
+                isFacilitator={isFacilitator}
+                onRename={onRenameGroup ? (name) => onRenameGroup(group.id, name) : undefined}
+                onDelete={onDeleteGroup ? () => onDeleteGroup(group.id) : undefined}
+              />
+            ))}
+          </div>
 
           <UngroupedSection
             answers={data.ungrouped}
@@ -175,7 +185,7 @@ export default function GroupedAnswers({
         {/* Drag overlay for visual feedback */}
         <DragOverlay>
           {activeAnswer && (
-            <div className="opacity-80">
+            <div className="opacity-90 scale-105 rotate-2 cursor-grabbing">
               <DraggableAnswer answer={activeAnswer} showName={showNames} isDraggable={false} />
             </div>
           )}

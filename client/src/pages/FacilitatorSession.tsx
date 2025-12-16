@@ -1,10 +1,25 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
+import { motion, AnimatePresence } from 'framer-motion'
+import { 
+  Copy, 
+  Users, 
+  Play, 
+  CheckCircle2, 
+  ArrowRight, 
+  XOctagon, 
+  Share2, 
+  QrCode, 
+  Loader2,
+  AlertCircle
+} from 'lucide-react'
 import { useFacilitatorSocket } from '../hooks/useFacilitatorSocket'
 import { useMeeting } from '../hooks/useMeeting'
 import QuestionCard from '../components/QuestionCard'
 import AnswerReveal from '../components/AnswerReveal'
 import QRCodeDisplay from '../components/QRCodeDisplay'
+import { Button } from '../components/ui/Button'
+import { Card, CardContent } from '../components/ui/Card'
 
 export default function FacilitatorSession() {
   const { code } = useParams<{ code: string }>()
@@ -124,24 +139,29 @@ export default function FacilitatorSession() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-gray-500">Loading...</div>
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
       </div>
     )
   }
 
   if (fetchError) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-red-500">{fetchError}</div>
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <Card className="border-destructive/50 bg-destructive/5">
+          <CardContent className="p-6 text-center">
+            <AlertCircle className="w-12 h-12 text-destructive mx-auto mb-4" />
+            <p className="text-destructive font-medium">{fetchError}</p>
+          </CardContent>
+        </Card>
       </div>
     )
   }
 
   if (!meeting) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-gray-500">Meeting not found</div>
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="text-muted-foreground">Meeting not found</div>
       </div>
     )
   }
@@ -151,98 +171,120 @@ export default function FacilitatorSession() {
     : true
 
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen bg-background text-foreground pb-20">
       {/* Dismissible error notification */}
-      {socketError && (
-        <div className="fixed top-4 right-4 z-50 max-w-md bg-red-50 border border-red-200 rounded-lg shadow-lg p-4">
-          <div className="flex items-start gap-3">
-            <div className="flex-1">
-              <p className="text-sm text-red-800">{socketError}</p>
-            </div>
-            <button onClick={() => setSocketError('')} className="text-red-500 hover:text-red-700">
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M6 18L18 6M6 6l12 12"
-                />
-              </svg>
+      <AnimatePresence>
+        {socketError && (
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className="fixed top-4 right-4 z-50 max-w-md bg-destructive text-destructive-foreground rounded-lg shadow-lg p-4 flex items-center gap-3"
+          >
+            <p className="text-sm flex-1">{socketError}</p>
+            <button onClick={() => setSocketError('')} className="text-destructive-foreground/80 hover:text-destructive-foreground">
+              <XOctagon className="w-4 h-4" />
             </button>
-          </div>
-        </div>
-      )}
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Header */}
-      <header className="bg-white shadow-sm">
-        <div className="max-w-4xl mx-auto px-4 py-4 flex justify-between items-center">
+      <header className="sticky top-0 z-40 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <div className="container flex h-16 items-center justify-between px-4">
           <div>
-            <h1 className="text-xl font-bold text-gray-900">{meeting.title}</h1>
-            <p className="text-sm text-gray-500">Facilitator View</p>
+            <h1 className="text-lg font-semibold tracking-tight">{meeting.title}</h1>
+            <p className="text-xs text-muted-foreground">Facilitator View</p>
           </div>
           <div className="flex items-center gap-4">
-            <div className="text-sm">
-              <span className="font-medium">{participantCount}</span>
-              <span className="text-gray-500"> participants</span>
+            <div className="flex items-center text-sm text-muted-foreground bg-secondary/50 px-3 py-1.5 rounded-full">
+              <Users className="w-4 h-4 mr-2" />
+              <span className="font-medium text-foreground mr-1">{participantCount}</span>
+              <span className="hidden sm:inline">participants</span>
             </div>
-            <button
+            <Button
+              variant="outline"
+              size="sm"
               onClick={copyJoinLink}
-              className="bg-gray-100 hover:bg-gray-200 px-3 py-1.5 rounded text-sm font-medium transition-colors"
+              className="hidden sm:flex"
             >
-              {copied ? 'Copied!' : `Share: ${meeting.participantCode}`}
-            </button>
+              {copied ? <CheckCircle2 className="w-4 h-4 mr-2" /> : <Share2 className="w-4 h-4 mr-2" />}
+              {copied ? 'Copied!' : `Code: ${meeting.participantCode}`}
+            </Button>
           </div>
         </div>
       </header>
 
-      <main className="max-w-4xl mx-auto px-4 py-8">
+      <main className="container max-w-5xl mx-auto px-4 py-8">
         {/* Meeting not started */}
         {meeting.status === 'draft' && (
-          <div className="bg-white rounded-xl shadow-lg p-8 text-center">
-            <h2 className="text-2xl font-bold mb-4">Ready to Start?</h2>
-            <p className="text-gray-600">Scan the QR code or enter the code to join</p>
-            <QRCodeDisplay
-              url={`${window.location.origin}/join/${meeting.participantCode}`}
-              participantCode={meeting.participantCode}
-            />
-            <div className="flex justify-center gap-4">
-              <button
-                onClick={copyJoinLink}
-                className="bg-gray-100 hover:bg-gray-200 px-6 py-3 rounded-lg font-medium transition-colors"
-              >
-                Copy Join Link
-              </button>
-              <button
-                onClick={startMeeting}
-                className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-lg font-medium transition-colors"
-              >
-                Start Meeting
-              </button>
-            </div>
-          </div>
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.5 }}
+          >
+            <Card className="border-border/50 shadow-xl bg-card/50 backdrop-blur-sm overflow-hidden">
+              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary to-secondary" />
+              <CardContent className="p-12 text-center">
+                <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <QrCode className="w-10 h-10 text-primary" />
+                </div>
+                <h2 className="text-3xl font-bold mb-4">Ready to Start?</h2>
+                <p className="text-muted-foreground mb-8 max-w-md mx-auto">
+                  Share the code or QR code with your team. Once everyone has joined, start the meeting to begin the first question.
+                </p>
+                
+                <div className="flex justify-center mb-8">
+                  <QRCodeDisplay
+                    url={`${window.location.origin}/join/${meeting.participantCode}`}
+                    participantCode={meeting.participantCode}
+                  />
+                </div>
+
+                <div className="flex flex-col sm:flex-row justify-center gap-4">
+                  <Button
+                    variant="secondary"
+                    size="lg"
+                    onClick={copyJoinLink}
+                    className="w-full sm:w-auto"
+                  >
+                    <Copy className="w-4 h-4 mr-2" />
+                    Copy Join Link
+                  </Button>
+                  <Button
+                    size="lg"
+                    onClick={startMeeting}
+                    className="w-full sm:w-auto"
+                  >
+                    <Play className="w-4 h-4 mr-2" />
+                    Start Meeting
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
         )}
 
         {/* Active meeting */}
         {meeting.status === 'active' && currentQuestion && (
-          <div className="space-y-6">
+          <div className="space-y-8">
             {/* Progress */}
-            <div className="flex items-center justify-between text-sm text-gray-500">
-              <span>
-                Question {currentQuestionIndex + 1} of {meeting.questions?.length || 0}
-              </span>
-              <div className="flex gap-1">
-                {meeting.questions?.map((_, i) => (
-                  <div
-                    key={i}
-                    className={`w-8 h-1 rounded ${
-                      i < currentQuestionIndex
-                        ? 'bg-green-500'
-                        : i === currentQuestionIndex
-                          ? 'bg-indigo-500'
-                          : 'bg-gray-300'
-                    }`}
-                  />
-                ))}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-muted-foreground">
+                  Question <span className="text-foreground font-medium">{currentQuestionIndex + 1}</span> of {meeting.questions?.length || 0}
+                </span>
+                <span className="text-muted-foreground">
+                  {Math.round(((currentQuestionIndex + 1) / (meeting.questions?.length || 1)) * 100)}% Complete
+                </span>
+              </div>
+              <div className="h-2 w-full bg-secondary/30 rounded-full overflow-hidden">
+                <motion.div 
+                  className="h-full bg-primary"
+                  initial={{ width: 0 }}
+                  animate={{ width: `${((currentQuestionIndex + 1) / (meeting.questions?.length || 1)) * 100}%` }}
+                  transition={{ duration: 0.5 }}
+                />
               </div>
             </div>
 
@@ -258,31 +300,29 @@ export default function FacilitatorSession() {
 
             {/* Placeholder cards while answering */}
             {sessionStatus === 'answering' && answerCount > 0 && (
-              <div className="bg-white rounded-xl shadow-lg p-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Answers Received</h3>
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="bg-card/50 border border-border/50 rounded-xl p-6 backdrop-blur-sm"
+              >
+                <h3 className="text-lg font-semibold mb-4 flex items-center">
+                  <Loader2 className="w-5 h-5 mr-2 animate-spin text-primary" />
+                  Answers Received
+                </h3>
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
                   {Array.from({ length: answerCount }).map((_, i) => (
-                    <div
+                    <motion.div
                       key={i}
-                      className="h-16 bg-gradient-to-br from-indigo-50 to-purple-50 border border-indigo-100 rounded-lg flex items-center justify-center animate-pulse"
+                      initial={{ scale: 0.8, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      transition={{ delay: i * 0.05 }}
+                      className="h-20 bg-secondary/30 border border-secondary/50 rounded-lg flex items-center justify-center"
                     >
-                      <svg
-                        className="w-6 h-6 text-indigo-300"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
-                        />
-                      </svg>
-                    </div>
+                      <CheckCircle2 className="w-8 h-8 text-primary/50" />
+                    </motion.div>
                   ))}
                 </div>
-              </div>
+              </motion.div>
             )}
 
             {/* Revealed Answers */}
@@ -304,45 +344,56 @@ export default function FacilitatorSession() {
             )}
 
             {/* Controls */}
-            <div className="flex justify-center gap-4">
-              {sessionStatus === 'waiting' && (
-                <button
-                  onClick={handleStartQuestion}
-                  disabled={participantCount === 0}
-                  className="bg-indigo-600 hover:bg-indigo-700 disabled:bg-gray-400 text-white px-8 py-3 rounded-lg font-medium transition-colors"
-                >
-                  Start Question
-                </button>
-              )}
+            <div className="fixed bottom-0 left-0 right-0 p-4 bg-background/80 backdrop-blur-md border-t border-border z-40">
+              <div className="container max-w-5xl mx-auto flex justify-center gap-4">
+                {sessionStatus === 'waiting' && (
+                  <Button
+                    size="lg"
+                    onClick={handleStartQuestion}
+                    disabled={participantCount === 0}
+                    className="w-full sm:w-auto min-w-[200px]"
+                  >
+                    <Play className="w-4 h-4 mr-2" />
+                    Start Question
+                  </Button>
+                )}
 
-              {sessionStatus === 'answering' && (
-                <button
-                  onClick={handleRevealAnswers}
-                  className="bg-green-600 hover:bg-green-700 text-white px-8 py-3 rounded-lg font-medium transition-colors"
-                >
-                  Reveal Answers ({answeredCount}/{participantCount})
-                </button>
-              )}
+                {sessionStatus === 'answering' && (
+                  <Button
+                    size="lg"
+                    onClick={handleRevealAnswers}
+                    className="w-full sm:w-auto min-w-[200px] bg-emerald-600 hover:bg-emerald-700 text-white"
+                  >
+                    <CheckCircle2 className="w-4 h-4 mr-2" />
+                    Reveal Answers ({answeredCount}/{participantCount})
+                  </Button>
+                )}
 
-              {sessionStatus === 'revealed' && (
-                <>
-                  {!isLastQuestion ? (
-                    <button
-                      onClick={handleNextQuestion}
-                      className="bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-3 rounded-lg font-medium transition-colors"
-                    >
-                      Next Question
-                    </button>
-                  ) : (
-                    <button
-                      onClick={handleEndMeeting}
-                      className="bg-gray-600 hover:bg-gray-700 text-white px-8 py-3 rounded-lg font-medium transition-colors"
-                    >
-                      End Meeting
-                    </button>
-                  )}
-                </>
-              )}
+                {sessionStatus === 'revealed' && (
+                  <>
+                    {!isLastQuestion ? (
+                      <Button
+                        size="lg"
+                        onClick={handleNextQuestion}
+                        className="w-full sm:w-auto min-w-[200px]"
+                      >
+                        Next Question
+                        <ArrowRight className="w-4 h-4 ml-2" />
+                      </Button>
+                    ) : (
+                      <Button
+                        size="lg"
+                        variant="destructive"
+                        onClick={handleEndMeeting}
+                        className="w-full sm:w-auto min-w-[200px]"
+                      >
+                        End Meeting
+                        <XOctagon className="w-4 h-4 ml-2" />
+                      </Button>
+                    )}
+                  </>
+                )}
+              </div>
             </div>
           </div>
         )}
