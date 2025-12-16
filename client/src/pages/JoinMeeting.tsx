@@ -1,15 +1,18 @@
-import { useState, useEffect, useCallback, type FormEvent, type ChangeEvent } from 'react'
+import { useState, useEffect, useCallback, useRef, type FormEvent, type ChangeEvent } from 'react'
 import { useNavigate, useParams, Link } from 'react-router-dom'
+import { useAuth } from '../context/AuthContext'
 import type { Meeting } from '../types'
 
 export default function JoinMeeting() {
   const navigate = useNavigate()
   const { code: urlCode } = useParams<{ code?: string }>()
+  const { user, displayName } = useAuth()
   const [code, setCode] = useState(urlCode || '')
   const [name, setName] = useState('')
   const [isJoining, setIsJoining] = useState(false)
   const [error, setError] = useState('')
   const [meetingInfo, setMeetingInfo] = useState<Meeting | null>(null)
+  const hasAutoFilledName = useRef(false)
 
   const fetchMeetingInfo = useCallback(
     async (meetingCode: string) => {
@@ -40,6 +43,14 @@ export default function JoinMeeting() {
       fetchMeetingInfo(urlCode)
     }
   }, [urlCode, fetchMeetingInfo])
+
+  // Auto-fill name from user profile if logged in (only once)
+  useEffect(() => {
+    if (displayName && !hasAutoFilledName.current) {
+      setName(displayName)
+      hasAutoFilledName.current = true
+    }
+  }, [displayName])
 
   const handleCodeChange = (e: ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '')
@@ -140,6 +151,17 @@ export default function JoinMeeting() {
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                 placeholder="Enter your name"
               />
+              {!user && (
+                <p className="text-sm text-gray-500 mt-1">
+                  <Link
+                    to={`/login?redirect=${encodeURIComponent(`/join/${code}`)}`}
+                    className="text-indigo-600 hover:text-indigo-800"
+                  >
+                    Sign in
+                  </Link>{' '}
+                  to use your account name
+                </p>
+              )}
             </div>
 
             <button

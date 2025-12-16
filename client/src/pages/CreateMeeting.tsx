@@ -1,5 +1,6 @@
-import { useState, type FormEvent, type ChangeEvent } from 'react'
+import { useState, useEffect, type FormEvent, type ChangeEvent } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
+import { useAuth } from '../context/AuthContext'
 
 interface QuestionForm {
   id: string
@@ -12,6 +13,7 @@ const generateQuestionId = () => crypto.randomUUID()
 
 export default function CreateMeeting() {
   const navigate = useNavigate()
+  const { user, session, loading } = useAuth()
   const [title, setTitle] = useState('')
   const [showParticipantNames, setShowParticipantNames] = useState(true)
   const [questions, setQuestions] = useState<QuestionForm[]>([
@@ -19,6 +21,13 @@ export default function CreateMeeting() {
   ])
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState('')
+
+  // Redirect to login if not authenticated
+  useEffect(() => {
+    if (!loading && !user) {
+      navigate('/login?redirect=/create')
+    }
+  }, [loading, user, navigate])
 
   const addQuestion = () => {
     setQuestions([
@@ -61,7 +70,10 @@ export default function CreateMeeting() {
     try {
       const response = await fetch('/api/meetings', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${session?.access_token}`
+        },
         body: JSON.stringify({
           title: title.trim(),
           showParticipantNames,
@@ -84,6 +96,15 @@ export default function CreateMeeting() {
     } finally {
       setIsSubmitting(false)
     }
+  }
+
+  // Show loading state while checking auth
+  if (loading || !user) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-gray-500">Loading...</div>
+      </div>
+    )
   }
 
   return (

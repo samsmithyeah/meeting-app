@@ -59,7 +59,7 @@ export default function FacilitatorSession() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${meeting.facilitatorCode}`
+          'X-Facilitator-Code': meeting.facilitatorCode
         }
       })
       setMeeting((prev) => (prev ? { ...prev, status: 'active' } : null))
