@@ -4,6 +4,7 @@ import { useFacilitatorSocket } from '../hooks/useFacilitatorSocket'
 import { useMeeting } from '../hooks/useMeeting'
 import QuestionCard from '../components/QuestionCard'
 import AnswerReveal from '../components/AnswerReveal'
+import AnswerCard from '../components/AnswerCard'
 import QRCodeDisplay from '../components/QRCodeDisplay'
 
 export default function FacilitatorSession() {
@@ -259,27 +260,12 @@ export default function FacilitatorSession() {
             {/* Placeholder cards while answering */}
             {sessionStatus === 'answering' && answerCount > 0 && (
               <div className="bg-white rounded-xl shadow-lg p-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Answers Received</h3>
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                  Answers Received ({answerCount})
+                </h3>
+                <div className="space-y-3">
                   {Array.from({ length: answerCount }).map((_, i) => (
-                    <div
-                      key={i}
-                      className="h-16 bg-gradient-to-br from-indigo-50 to-purple-50 border border-indigo-100 rounded-lg flex items-center justify-center animate-pulse"
-                    >
-                      <svg
-                        className="w-6 h-6 text-indigo-300"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
-                        />
-                      </svg>
-                    </div>
+                    <AnswerCard key={i} revealed={false} />
                   ))}
                 </div>
               </div>
