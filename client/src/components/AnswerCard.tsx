@@ -1,15 +1,26 @@
 import { forwardRef } from 'react'
 import type { Answer } from '../types'
 
-interface AnswerCardProps {
-  revealed?: boolean
-  answer?: Answer
-  showName?: boolean
+interface AnswerCardCommonProps {
   isDraggable?: boolean
   isDragging?: boolean
   style?: React.CSSProperties
   className?: string
 }
+
+type AnswerCardProps = AnswerCardCommonProps &
+  (
+    | {
+        revealed?: true
+        answer: Answer
+        showName?: boolean
+      }
+    | {
+        revealed: false
+        answer?: never
+        showName?: never
+      }
+  )
 
 const AnswerCard = forwardRef<
   HTMLDivElement,
@@ -17,7 +28,7 @@ const AnswerCard = forwardRef<
 >(
   (
     {
-      revealed = true,
+      revealed,
       answer,
       showName = false,
       isDraggable = false,
@@ -37,7 +48,7 @@ const AnswerCard = forwardRef<
         } ${isDraggable ? 'cursor-grab active:cursor-grabbing' : ''} ${className}`}
         {...props}
       >
-        {revealed && answer ? (
+        {revealed !== false && answer ? (
           <div className="flex items-start gap-3">
             {isDraggable && (
               <div className="flex-shrink-0 pt-1 text-gray-400">
