@@ -97,11 +97,25 @@ jobs:
       - name: Install Playwright browsers
         run: npx playwright install --with-deps chromium
 
-      - name: Run E2E tests with WireMock
-        run: npm run test:e2e:wiremock
+      - name: Start WireMock
+        run: npm run wiremock:start
+
+      - name: Wait for WireMock
+        run: npx wait-on http-get://localhost:8080/__admin/
+
+      - name: Run E2E tests
+        run: npm run test:e2e
+
+      - name: Stop WireMock
+        if: always()
+        run: npm run wiremock:stop
+
+      - name: Cleanup test data
+        if: always()
+        run: npm run test:e2e:cleanup
 
       - name: Upload artifacts
-        if: ${{ !cancelled() }}
+        if: failure()
         uses: actions/upload-artifact@v6
         with:
           name: playwright-artifacts
