@@ -69,5 +69,8 @@ export class CreateMeetingPage {
     }
 
     await this.createMeetingButton.click()
+    // Wait for navigation to facilitator session page and ensure page is fully loaded
+    await this.page.waitForURL(/\/facilitate\//)
+    await this.page.waitForLoadState('networkidle')
   }
 }
