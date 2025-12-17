@@ -11,6 +11,21 @@ interface QuestionForm {
 
 const generateQuestionId = () => crypto.randomUUID()
 
+// Time limit options - include shorter options in dev mode for faster E2E tests
+const TIME_LIMIT_OPTIONS = [
+  { value: '', label: 'No limit' },
+  ...(import.meta.env.DEV
+    ? [
+        { value: '5', label: '5 seconds (dev)' },
+        { value: '10', label: '10 seconds (dev)' }
+      ]
+    : []),
+  { value: '30', label: '30 seconds' },
+  { value: '60', label: '1 minute' },
+  { value: '120', label: '2 minutes' },
+  { value: '300', label: '5 minutes' }
+]
+
 export default function CreateMeeting() {
   const navigate = useNavigate()
   const { user, session, loading } = useAuth()
@@ -202,11 +217,11 @@ export default function CreateMeeting() {
                           }
                           className="px-2 py-1 border border-gray-300 rounded focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                         >
-                          <option value="">No limit</option>
-                          <option value="30">30 seconds</option>
-                          <option value="60">1 minute</option>
-                          <option value="120">2 minutes</option>
-                          <option value="300">5 minutes</option>
+                          {TIME_LIMIT_OPTIONS.map((option) => (
+                            <option key={option.value} value={option.value}>
+                              {option.label}
+                            </option>
+                          ))}
                         </select>
                       </div>
                     </div>

@@ -53,7 +53,6 @@ test.describe('Meeting Join', () => {
       await expect(joinPage.joinButton).toBeDisabled()
     })
 
-
     test('navigates back to home', async ({ page }) => {
       const joinPage = new JoinMeetingPage(page)
       await joinPage.goto()

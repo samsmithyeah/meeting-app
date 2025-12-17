@@ -1,5 +1,10 @@
 import { test, expect } from '../fixtures'
-import { CreateMeetingPage, FacilitatorSessionPage, JoinMeetingPage, ParticipantSessionPage } from '../pages'
+import {
+  CreateMeetingPage,
+  FacilitatorSessionPage,
+  JoinMeetingPage,
+  ParticipantSessionPage
+} from '../pages'
 
 test.describe('Multi-User Interaction', () => {
   test.describe('Two Users - Facilitator and Participant', () => {

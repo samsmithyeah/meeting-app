@@ -98,11 +98,7 @@ test.describe('Facilitator Session', () => {
 
       await createPage.createMeeting({
         title: 'Progress Test',
-        questions: [
-          { text: 'Question 1?' },
-          { text: 'Question 2?' },
-          { text: 'Question 3?' }
-        ]
+        questions: [{ text: 'Question 1?' }, { text: 'Question 2?' }, { text: 'Question 3?' }]
       })
 
       const facilitatorPage = new FacilitatorSessionPage(page)

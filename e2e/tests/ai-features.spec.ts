@@ -1,5 +1,10 @@
 import { test, expect } from '../fixtures'
-import { CreateMeetingPage, FacilitatorSessionPage, JoinMeetingPage, ParticipantSessionPage } from '../pages'
+import {
+  CreateMeetingPage,
+  FacilitatorSessionPage,
+  JoinMeetingPage,
+  ParticipantSessionPage
+} from '../pages'
 
 test.describe('AI Features', () => {
   test.use({ storageState: 'e2e/.auth/user1.json' })

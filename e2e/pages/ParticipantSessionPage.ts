@@ -17,14 +17,20 @@ export class ParticipantSessionPage {
     this.page = page
     this.meetingTitle = page.getByRole('banner').getByRole('heading', { level: 1 })
     this.participantName = page.getByText(/Joined as/)
-    this.waitingForMeetingMessage = page.getByRole('status').filter({ hasText: 'Waiting for meeting to start...' })
-    this.waitingForQuestionMessage = page.getByRole('status').filter({ hasText: 'Waiting for the next question...' })
+    this.waitingForMeetingMessage = page
+      .getByRole('status')
+      .filter({ hasText: 'Waiting for meeting to start...' })
+    this.waitingForQuestionMessage = page
+      .getByRole('status')
+      .filter({ hasText: 'Waiting for the next question...' })
     this.currentQuestionText = page.getByRole('heading', { level: 2 }).first()
     // Match both "Type your answer..." and "Add another answer..."
     this.answerInput = page.getByPlaceholder(/answer/i)
     this.submitAnswerButton = page.getByRole('button', { name: /Submit|Add Answer/i })
     this.answeredCountText = page.getByText(/\d+\/\d+ participants have answered/)
-    this.waitingForFacilitatorMessage = page.getByRole('status').filter({ hasText: 'Waiting for facilitator to continue...' })
+    this.waitingForFacilitatorMessage = page
+      .getByRole('status')
+      .filter({ hasText: 'Waiting for facilitator to continue...' })
     this.timerDisplay = page.getByRole('timer')
   }
 
