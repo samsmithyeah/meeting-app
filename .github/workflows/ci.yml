@@ -49,8 +49,29 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
+      # Test configuration
       TEST_USER_PASSWORD: ${{ secrets.TEST_USER_PASSWORD }}
       CI: true
+      # Server environment variables
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      REDIS_URL: redis://localhost:6379
+      OPENAI_API_KEY: sk-test-key-for-wiremock
+      # Client environment variables (Vite)
+      VITE_SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      VITE_SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+
+    services:
+      redis:
+        image: redis:7
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
 
     steps:
       - name: Checkout
@@ -80,8 +101,11 @@ jobs:
         run: npm run test:e2e:wiremock
 
       - name: Upload artifacts
-        if: failure()
+        if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v6
         with:
-          name: Playwright artifacts
-          path: playwright-report
+          name: playwright-artifacts
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 7
