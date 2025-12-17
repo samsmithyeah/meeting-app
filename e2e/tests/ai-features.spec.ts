@@ -22,7 +22,7 @@ test.describe('AI Features', () => {
       const facilitatorPage = new FacilitatorSessionPage(page)
       const participantCode = await facilitatorPage.getParticipantCode()
 
-      await facilitatorPage.startMeetingButton.click()
+      await facilitatorPage.startMeeting()
       await expect(facilitatorPage.startQuestionButton).toBeVisible({ timeout: 10000 })
 
       // Add multiple participants with answers
@@ -82,7 +82,7 @@ test.describe('AI Features', () => {
       const facilitatorPage = new FacilitatorSessionPage(page)
       const participantCode = await facilitatorPage.getParticipantCode()
 
-      await facilitatorPage.startMeetingButton.click()
+      await facilitatorPage.startMeeting()
       await expect(facilitatorPage.startQuestionButton).toBeVisible({ timeout: 10000 })
 
       // Add 4+ participants (required for AI grouping)
@@ -149,7 +149,7 @@ test.describe('AI Features', () => {
       const facilitatorPage = new FacilitatorSessionPage(page)
       const participantCode = await facilitatorPage.getParticipantCode()
 
-      await facilitatorPage.startMeetingButton.click()
+      await facilitatorPage.startMeeting()
       await expect(facilitatorPage.startQuestionButton).toBeVisible({ timeout: 10000 })
 
       // Add only 2 participants
