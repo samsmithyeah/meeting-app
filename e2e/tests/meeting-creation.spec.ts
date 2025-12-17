@@ -4,84 +4,67 @@ import { CreateMeetingPage, FacilitatorSessionPage } from '../pages'
 test.describe('Meeting Creation', () => {
   test.use({ storageState: 'e2e/.auth/user1.json' })
 
-  test('displays create meeting form', async ({ page }) => {
+  test('displays form and validates required fields', async ({ page }) => {
     const createPage = new CreateMeetingPage(page)
     await createPage.goto()
 
+    // Original: displays create meeting form
     await expect(page.getByRole('heading', { name: 'Create a Meeting' })).toBeVisible()
     await expect(createPage.titleInput).toBeVisible()
     await expect(createPage.showNamesCheckbox).toBeVisible()
     await expect(createPage.showNamesCheckbox).toBeChecked()
     await expect(createPage.getQuestionInput(0)).toBeVisible()
     await expect(createPage.createMeetingButton).toBeVisible()
-  })
 
-  test('shows error when title is empty', async ({ page }) => {
-    const createPage = new CreateMeetingPage(page)
-    await createPage.goto()
-
+    // Original: shows error when title is empty
     await createPage.getQuestionInput(0).fill('Test question?')
     await createPage.createMeetingButton.click()
-
     await expect(createPage.errorMessage).toContainText('meeting title')
-  })
 
-  test('shows error when no questions provided', async ({ page }) => {
-    const createPage = new CreateMeetingPage(page)
-    await createPage.goto()
-
+    // Clear and test question validation
     await createPage.titleInput.fill('Test Meeting')
-    await createPage.createMeetingButton.click()
+    await createPage.getQuestionInput(0).fill('')
 
+    // Original: shows error when no questions provided
+    await createPage.createMeetingButton.click()
     await expect(createPage.errorMessage).toContainText('at least one question')
   })
 
-  test('can add multiple questions', async ({ page }) => {
+  test('manages questions - add and remove', async ({ page }) => {
     const createPage = new CreateMeetingPage(page)
     await createPage.goto()
 
+    // Original: can add multiple questions
     await createPage.addQuestionButton.click()
     await createPage.addQuestionButton.click()
-
     await expect(createPage.getQuestionInput(0)).toBeVisible()
     await expect(createPage.getQuestionInput(1)).toBeVisible()
     await expect(createPage.getQuestionInput(2)).toBeVisible()
-  })
 
-  test('can remove questions', async ({ page }) => {
-    const createPage = new CreateMeetingPage(page)
-    await createPage.goto()
-
-    await createPage.addQuestionButton.click()
+    // Original: can remove questions
+    await createPage.getRemoveButton(2).click()
+    await expect(createPage.getQuestionInput(2)).not.toBeVisible()
     await expect(createPage.getQuestionInput(1)).toBeVisible()
 
+    // Remove another question
     await createPage.getRemoveButton(1).click()
     await expect(createPage.getQuestionInput(1)).not.toBeVisible()
-  })
 
-  test('cannot remove the last question', async ({ page }) => {
-    const createPage = new CreateMeetingPage(page)
-    await createPage.goto()
-
-    // Should only have one question, no remove button visible
+    // Original: cannot remove the last question
     await expect(page.getByRole('button', { name: 'Remove' })).not.toBeVisible()
   })
 
-  test('can set question options', async ({ page }) => {
+  test('configures question and meeting options', async ({ page }) => {
     const createPage = new CreateMeetingPage(page)
     await createPage.goto()
 
+    // Original: can set question options
     await createPage.getAllowMultipleCheckbox(0).check()
     await expect(createPage.getAllowMultipleCheckbox(0)).toBeChecked()
-
     await createPage.getTimeLimitSelect(0).selectOption('60')
     await expect(createPage.getTimeLimitSelect(0)).toHaveValue('60')
-  })
 
-  test('can uncheck show participant names', async ({ page }) => {
-    const createPage = new CreateMeetingPage(page)
-    await createPage.goto()
-
+    // Original: can uncheck show participant names
     await createPage.showNamesCheckbox.uncheck()
     await expect(createPage.showNamesCheckbox).not.toBeChecked()
   })

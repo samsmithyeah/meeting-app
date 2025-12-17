@@ -33,5 +33,16 @@ export class JoinMeetingPage {
     await this.codeInput.fill(code)
     await this.nameInput.fill(name)
     await this.joinButton.click()
+    // Wait for successful navigation to session page
+    await this.page.waitForURL(`/session/${code}`)
+    // Wait for success or error state
+    const result = await Promise.race([
+      this.page.getByText("You're in!").waitFor({ timeout: 10000 }).then(() => 'success'),
+      this.page.getByText('Waiting for meeting to start...').waitFor({ timeout: 10000 }).then(() => 'success'),
+      this.page.getByText('Meeting not found').waitFor({ timeout: 10000 }).then(() => 'not_found')
+    ])
+    if (result === 'not_found') {
+      throw new Error('Failed to join meeting: Meeting not found')
+    }
   }
 }

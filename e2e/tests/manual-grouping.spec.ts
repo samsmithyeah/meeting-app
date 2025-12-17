@@ -81,50 +81,24 @@ test.describe('Manual Answer Grouping', () => {
   }
 
   test.describe('Create Group', () => {
-    test('can create a new empty group', async ({ page, browser }) => {
+    test('can create, cancel, and validate group creation', async ({ page, browser }) => {
       const { facilitatorPage, contexts } = await setupMeetingWithGroupedAnswers(page, browser)
 
-      // Click "New Group" button
+      // Original: can create a new empty group
       await facilitatorPage.newGroupButton.click()
-
-      // Modal should appear
       await expect(page.getByText('Create New Group')).toBeVisible()
-
-      // Enter group name
       await facilitatorPage.groupNameInput.fill('Technical Issues')
       await facilitatorPage.createGroupSubmitButton.click()
-
-      // New group should appear
       await expect(facilitatorPage.getGroupHeader('Technical Issues')).toBeVisible()
 
-      await Promise.all(contexts.map((ctx) => ctx.close()))
-    })
-
-    test('cancel button closes create group modal', async ({ page, browser }) => {
-      const { facilitatorPage, contexts } = await setupMeetingWithGroupedAnswers(page, browser)
-
-      // Click "New Group" button
+      // Original: cancel button closes create group modal
       await facilitatorPage.newGroupButton.click()
-
-      // Modal should appear
       await expect(page.getByText('Create New Group')).toBeVisible()
-
-      // Click cancel
       await facilitatorPage.cancelGroupButton.click()
-
-      // Modal should close
       await expect(page.getByText('Create New Group')).not.toBeVisible()
 
-      await Promise.all(contexts.map((ctx) => ctx.close()))
-    })
-
-    test('create button is disabled with empty name', async ({ page, browser }) => {
-      const { facilitatorPage, contexts } = await setupMeetingWithGroupedAnswers(page, browser)
-
-      // Click "New Group" button
+      // Original: create button is disabled with empty name
       await facilitatorPage.newGroupButton.click()
-
-      // Create button should be disabled
       await expect(facilitatorPage.createGroupSubmitButton).toBeDisabled()
 
       await Promise.all(contexts.map((ctx) => ctx.close()))
@@ -132,46 +106,32 @@ test.describe('Manual Answer Grouping', () => {
   })
 
   test.describe('Rename Group', () => {
-    test('can rename an existing group', async ({ page, browser }) => {
+    test('can rename group and cancel with escape', async ({ page, browser }) => {
       const { facilitatorPage, contexts } = await setupMeetingWithGroupedAnswers(page, browser)
 
-      // First create a group
+      // Create a group first
       await facilitatorPage.createGroup('Original Name')
       await expect(facilitatorPage.getGroupHeader('Original Name')).toBeVisible()
 
-      // Click rename button (pencil icon)
+      // Original: can rename an existing group
       await facilitatorPage.getRenameGroupButton().click()
-
-      // Input should appear - find the input that's now focused in the group header
       const input = page.locator('input[type="text"]').first()
       await input.clear()
       await input.fill('New Name')
       await input.press('Enter')
-
-      // New name should appear
       await expect(facilitatorPage.getGroupHeader('New Name')).toBeVisible()
       await expect(facilitatorPage.getGroupHeader('Original Name')).not.toBeVisible()
 
-      await Promise.all(contexts.map((ctx) => ctx.close()))
-    })
-
-    test('escape key cancels rename', async ({ page, browser }) => {
-      const { facilitatorPage, contexts } = await setupMeetingWithGroupedAnswers(page, browser)
-
-      // First create a group
+      // Create another group to test escape key
       await facilitatorPage.createGroup('My Group')
       await expect(facilitatorPage.getGroupHeader('My Group')).toBeVisible()
 
-      // Click rename button
+      // Original: escape key cancels rename
       await facilitatorPage.getRenameGroupButton().click()
-
-      // Type new name but press escape
-      const input = page.locator('input[type="text"]').first()
-      await input.clear()
-      await input.fill('Changed Name')
-      await input.press('Escape')
-
-      // Original name should remain
+      const input2 = page.locator('input[type="text"]').first()
+      await input2.clear()
+      await input2.fill('Changed Name')
+      await input2.press('Escape')
       await expect(facilitatorPage.getGroupHeader('My Group')).toBeVisible()
       await expect(facilitatorPage.getGroupHeader('Changed Name')).not.toBeVisible()
 
@@ -198,7 +158,7 @@ test.describe('Manual Answer Grouping', () => {
   })
 
   test.describe('Drag and Drop', () => {
-    test('can drag answer from ungrouped to a group', async ({ page, browser }) => {
+    test('drag and drop functionality works correctly', async ({ page, browser }) => {
       const { facilitatorPage, contexts, answers } = await setupMeetingWithGroupedAnswers(
         page,
         browser
@@ -208,50 +168,23 @@ test.describe('Manual Answer Grouping', () => {
       await facilitatorPage.createGroup('Test Group')
       await expect(facilitatorPage.getGroupHeader('Test Group')).toBeVisible()
 
-      // Scroll to the ungrouped section to ensure answer cards are visible
+      // Original: can drag answer from ungrouped to a group
       await facilitatorPage.ungroupedSection.scrollIntoViewIfNeeded()
-
-      // Find an answer card by its text content (more reliable than role)
       const answerCard = page.getByText(answers[0], { exact: true })
       await expect(answerCard).toBeVisible()
-
-      // Find the target group container
       const targetGroup = facilitatorPage.getGroupHeader('Test Group').locator('..')
-
-      // Perform drag and drop
       await answerCard.dragTo(targetGroup)
-
-      // Verify the drag completed by checking the group now has answers
-      // The "Test Group" should no longer show 0
+      // Verify the drag completed
       await expect(facilitatorPage.getGroupHeader('Test Group').locator('..').locator('span')).not.toHaveText('0')
 
-      await Promise.all(contexts.map((ctx) => ctx.close()))
-    })
-
-    test('can drag answer from one group to another', async ({ page, browser }) => {
-      const { facilitatorPage, contexts } = await setupMeetingWithGroupedAnswers(page, browser)
-
-      // Create two groups
+      // Original: can drag answer from one group to another
       await facilitatorPage.createGroup('Group A')
       await expect(facilitatorPage.getGroupHeader('Group A')).toBeVisible()
-
       await facilitatorPage.createGroup('Group B')
       await expect(facilitatorPage.getGroupHeader('Group B')).toBeVisible()
 
-      // Both groups should be visible
-      await expect(facilitatorPage.getGroupHeader('Group A')).toBeVisible()
-      await expect(facilitatorPage.getGroupHeader('Group B')).toBeVisible()
-
-      await Promise.all(contexts.map((ctx) => ctx.close()))
-    })
-
-    test('ungrouped section is visible as drop target', async ({ page, browser }) => {
-      const { facilitatorPage, contexts } = await setupMeetingWithGroupedAnswers(page, browser)
-
-      // Verify the ungrouped section exists
+      // Original: ungrouped section is visible as drop target
       await expect(facilitatorPage.getGroupHeader('Ungrouped')).toBeVisible()
-
-      // The ungrouped section should be visible
       await expect(facilitatorPage.ungroupedSection).toBeVisible()
 
       await Promise.all(contexts.map((ctx) => ctx.close()))

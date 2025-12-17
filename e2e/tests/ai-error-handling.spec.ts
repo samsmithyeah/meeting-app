@@ -57,68 +57,34 @@ test.describe('AI Error Handling', () => {
   }
 
   test.describe('AI Summary Errors', () => {
-    test('shows error notification when AI summary fails', async ({ page, browser }) => {
+    test('handles AI summary errors gracefully', async ({ page, browser }) => {
       // This test requires WireMock to be running with the error mapping
-      // The error mapping triggers on requests containing "ERROR_TRIGGER"
-      // Using 2 participants to reduce flakiness
       const answers = ['ERROR_TRIGGER answer 1', 'ERROR_TRIGGER answer 2']
       const { facilitatorPage, contexts } = await setupMeetingWithAnswers(page, browser, answers)
 
       // Reveal answers - this triggers AI summary generation
       await facilitatorPage.revealAnswersButton.click()
 
+      // Original: shows error notification when AI summary fails
       // Answers should be revealed even if AI fails
       await expect(facilitatorPage.getRevealedAnswer(answers[0])).toBeVisible({ timeout: 10000 })
 
-      // Error notification should appear (only when running with WireMock error mock)
-      // Note: This will only trigger an error when using the WireMock mock
-      // that responds to ERROR_TRIGGER with a 500 error
+      // Error notification should appear
       await expect(facilitatorPage.errorNotification).toBeVisible({ timeout: 20000 })
 
       // Error message should indicate AI summary issue
       await expect(facilitatorPage.errorNotification).toContainText(/summary|AI|error/i)
 
-      await Promise.all(contexts.map((ctx) => ctx.close()))
-    })
-
-    test('error notification can be dismissed', async ({ page, browser }) => {
-      // Using 2 participants to reduce flakiness
-      const answers = ['ERROR_TRIGGER answer 1', 'ERROR_TRIGGER answer 2']
-      const { facilitatorPage, contexts } = await setupMeetingWithAnswers(page, browser, answers)
-
-      // Reveal answers - this triggers AI summary generation
-      await facilitatorPage.revealAnswersButton.click()
-
-      // Wait for error notification
-      await expect(facilitatorPage.errorNotification).toBeVisible({ timeout: 20000 })
-
-      // Dismiss the error
+      // Original: error notification can be dismissed
       await facilitatorPage.dismissError()
-
-      // Error should no longer be visible
       await expect(facilitatorPage.errorNotification).not.toBeVisible()
 
-      await Promise.all(contexts.map((ctx) => ctx.close()))
-    })
-
-    test('meeting continues normally after AI error', async ({ page, browser }) => {
-      // Using 2 participants to reduce flakiness
-      const answers = ['ERROR_TRIGGER answer 1', 'ERROR_TRIGGER answer 2']
-      const { facilitatorPage, contexts } = await setupMeetingWithAnswers(page, browser, answers)
-
-      // Reveal answers
-      await facilitatorPage.revealAnswersButton.click()
-
-      // Wait for answers to be revealed
-      await expect(facilitatorPage.getRevealedAnswer(answers[0])).toBeVisible({ timeout: 10000 })
-
-      // Even with AI error, the End Meeting button should be available
+      // Original: meeting continues normally after AI error
+      // End Meeting button should be available
       await expect(facilitatorPage.endMeetingButton).toBeVisible({ timeout: 10000 })
 
       // End the meeting
       await facilitatorPage.endMeetingButton.click()
-
-      // Should redirect to home
       await expect(page).toHaveURL('/')
 
       await Promise.all(contexts.map((ctx) => ctx.close()))
@@ -126,7 +92,7 @@ test.describe('AI Error Handling', () => {
   })
 
   test.describe('AI Grouping Errors', () => {
-    test('shows error notification when AI grouping fails', async ({ page, browser }) => {
+    test('handles AI grouping errors gracefully', async ({ page, browser }) => {
       // Need 4+ answers for AI grouping to be attempted
       const answers = [
         'ERROR_TRIGGER answer 1',
@@ -146,35 +112,10 @@ test.describe('AI Error Handling', () => {
       await expect(facilitatorPage.groupAnswersButton).toBeVisible({ timeout: 10000 })
       await facilitatorPage.groupAnswersButton.click()
 
-      // Error notification should appear
+      // Original: shows error notification when AI grouping fails
       await expect(facilitatorPage.errorNotification).toBeVisible({ timeout: 20000 })
 
-      await Promise.all(contexts.map((ctx) => ctx.close()))
-    })
-
-    test('grouping button remains enabled after error', async ({ page, browser }) => {
-      const answers = [
-        'ERROR_TRIGGER answer 1',
-        'ERROR_TRIGGER answer 2',
-        'ERROR_TRIGGER answer 3',
-        'ERROR_TRIGGER answer 4'
-      ]
-      const { facilitatorPage, contexts } = await setupMeetingWithAnswers(page, browser, answers)
-
-      // Reveal answers first
-      await facilitatorPage.revealAnswersButton.click()
-
-      // Wait for answers to be revealed
-      await expect(facilitatorPage.getRevealedAnswer(answers[0])).toBeVisible({ timeout: 10000 })
-
-      // Click Group Answers button
-      await expect(facilitatorPage.groupAnswersButton).toBeVisible({ timeout: 10000 })
-      await facilitatorPage.groupAnswersButton.click()
-
-      // Wait for error
-      await expect(facilitatorPage.errorNotification).toBeVisible({ timeout: 20000 })
-
-      // Dismiss error
+      // Original: grouping button remains enabled after error
       await facilitatorPage.dismissError()
 
       // Group Answers button should still be visible and enabled (for retry)
@@ -186,7 +127,7 @@ test.describe('AI Error Handling', () => {
   })
 
   test.describe('Error Notification UI', () => {
-    test('error notification has dismiss button', async ({ page, browser }) => {
+    test('error notification has proper structure and styling', async ({ page, browser }) => {
       const answers = ['ERROR_TRIGGER answer 1', 'ERROR_TRIGGER answer 2', 'ERROR_TRIGGER answer 3']
       const { facilitatorPage, contexts } = await setupMeetingWithAnswers(page, browser, answers)
 
@@ -196,24 +137,11 @@ test.describe('AI Error Handling', () => {
       // Wait for error notification
       await expect(facilitatorPage.errorNotification).toBeVisible({ timeout: 20000 })
 
-      // Error notification should have a close button
+      // Original: error notification has dismiss button
       const closeButton = facilitatorPage.errorNotification.locator('button')
       await expect(closeButton).toBeVisible()
 
-      await Promise.all(contexts.map((ctx) => ctx.close()))
-    })
-
-    test('error notification displays correct styling', async ({ page, browser }) => {
-      const answers = ['ERROR_TRIGGER answer 1', 'ERROR_TRIGGER answer 2', 'ERROR_TRIGGER answer 3']
-      const { facilitatorPage, contexts } = await setupMeetingWithAnswers(page, browser, answers)
-
-      // Reveal answers to trigger error
-      await facilitatorPage.revealAnswersButton.click()
-
-      // Wait for error notification
-      await expect(facilitatorPage.errorNotification).toBeVisible({ timeout: 20000 })
-
-      // Error notification should have alert role
+      // Original: error notification displays correct styling
       await expect(facilitatorPage.errorNotification).toHaveAttribute('role', 'alert')
 
       await Promise.all(contexts.map((ctx) => ctx.close()))

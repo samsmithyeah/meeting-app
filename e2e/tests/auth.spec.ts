@@ -3,10 +3,11 @@ import { LoginPage, SignupPage, HomePage } from '../pages'
 
 test.describe('Authentication', () => {
   test.describe('Login Page', () => {
-    test('displays login form with all elements', async ({ page }) => {
+    test('displays form elements and validates input', async ({ page }) => {
       const loginPage = new LoginPage(page)
       await loginPage.goto()
 
+      // Original: displays login form with all elements
       await expect(page.getByRole('heading', { name: 'Sign In' })).toBeVisible()
       await expect(loginPage.emailInput).toBeVisible()
       await expect(loginPage.passwordInput).toBeVisible()
@@ -14,35 +15,20 @@ test.describe('Authentication', () => {
       await expect(loginPage.googleButton).toBeVisible()
       await expect(loginPage.signUpLink).toBeVisible()
       await expect(loginPage.backToHomeLink).toBeVisible()
-    })
 
-    test('shows validation error for empty email', async ({ page }) => {
-      const loginPage = new LoginPage(page)
-      await loginPage.goto()
-
+      // Original: shows validation error for empty email
       await loginPage.emailInput.focus()
       await loginPage.emailInput.blur()
-
       await expect(page.getByText('Email is required')).toBeVisible()
-    })
 
-    test('shows validation error for invalid email format', async ({ page }) => {
-      const loginPage = new LoginPage(page)
-      await loginPage.goto()
-
+      // Original: shows validation error for invalid email format
       await loginPage.emailInput.fill('invalid-email')
       await loginPage.emailInput.blur()
-
       await expect(page.getByText('Please enter a valid email address')).toBeVisible()
-    })
 
-    test('shows validation error for empty password', async ({ page }) => {
-      const loginPage = new LoginPage(page)
-      await loginPage.goto()
-
+      // Original: shows validation error for empty password
       await loginPage.passwordInput.focus()
       await loginPage.passwordInput.blur()
-
       await expect(page.getByText('Password is required')).toBeVisible()
     })
 
@@ -76,28 +62,27 @@ test.describe('Authentication', () => {
       await expect(page).toHaveURL('/create')
     })
 
-    test('navigates to signup page', async ({ page }) => {
+    test('navigation links work correctly', async ({ page }) => {
       const loginPage = new LoginPage(page)
       await loginPage.goto()
 
+      // Original: navigates to signup page
       await loginPage.signUpLink.click()
       await expect(page).toHaveURL(/\/signup/)
-    })
 
-    test('navigates back to home', async ({ page }) => {
-      const loginPage = new LoginPage(page)
+      // Original: navigates back to home
       await loginPage.goto()
-
       await loginPage.backToHomeLink.click()
       await expect(page).toHaveURL('/')
     })
   })
 
   test.describe('Signup Page', () => {
-    test('displays signup form with all elements', async ({ page }) => {
+    test('displays form elements and validates input', async ({ page }) => {
       const signupPage = new SignupPage(page)
       await signupPage.goto()
 
+      // Original: displays signup form with all elements
       await expect(page.getByRole('heading', { name: 'Create Account' })).toBeVisible()
       await expect(signupPage.nameInput).toBeVisible()
       await expect(signupPage.emailInput).toBeVisible()
@@ -106,36 +91,21 @@ test.describe('Authentication', () => {
       await expect(signupPage.signUpButton).toBeVisible()
       await expect(signupPage.googleButton).toBeVisible()
       await expect(signupPage.signInLink).toBeVisible()
-    })
 
-    test('shows validation error for short name', async ({ page }) => {
-      const signupPage = new SignupPage(page)
-      await signupPage.goto()
-
+      // Original: shows validation error for short name
       await signupPage.nameInput.fill('A')
       await signupPage.nameInput.blur()
-
       await expect(page.getByText('Name must be at least 2 characters')).toBeVisible()
-    })
 
-    test('shows validation error for short password', async ({ page }) => {
-      const signupPage = new SignupPage(page)
-      await signupPage.goto()
-
+      // Original: shows validation error for short password
       await signupPage.passwordInput.fill('12345')
       await signupPage.passwordInput.blur()
-
       await expect(page.getByText('Password must be at least 6 characters')).toBeVisible()
-    })
 
-    test('shows validation error for mismatched passwords', async ({ page }) => {
-      const signupPage = new SignupPage(page)
-      await signupPage.goto()
-
+      // Original: shows validation error for mismatched passwords
       await signupPage.passwordInput.fill('password123')
       await signupPage.confirmPasswordInput.fill('differentpassword')
       await signupPage.confirmPasswordInput.blur()
-
       await expect(page.getByText('Passwords do not match')).toBeVisible()
     })
 
@@ -149,26 +119,18 @@ test.describe('Authentication', () => {
   })
 
   test.describe('Authenticated User', () => {
-    test('home page does not show sign in required text', async ({ browser }) => {
+    test('can access authenticated pages and sees correct home state', async ({ browser }) => {
       const context = await browser.newContext({
         storageState: 'e2e/.auth/user1.json'
       })
       const page = await context.newPage()
 
+      // Original: home page does not show sign in required text
       const homePage = new HomePage(page)
       await homePage.goto()
-
       await expect(homePage.signInRequiredText).not.toBeVisible()
 
-      await context.close()
-    })
-
-    test('can access create meeting page when authenticated', async ({ browser }) => {
-      const context = await browser.newContext({
-        storageState: 'e2e/.auth/user1.json'
-      })
-      const page = await context.newPage()
-
+      // Original: can access create meeting page when authenticated
       await page.goto('/create')
       await expect(page.getByRole('heading', { name: 'Create a Meeting' })).toBeVisible()
 
@@ -177,14 +139,13 @@ test.describe('Authentication', () => {
   })
 
   test.describe('Unauthenticated User', () => {
-    test('home page shows sign in required text', async ({ page }) => {
+    test('is restricted from authenticated pages', async ({ page }) => {
+      // Original: home page shows sign in required text
       const homePage = new HomePage(page)
       await homePage.goto()
-
       await expect(homePage.signInRequiredText).toBeVisible()
-    })
 
-    test('redirects to login when accessing create meeting page', async ({ page }) => {
+      // Original: redirects to login when accessing create meeting page
       await page.goto('/create')
       await expect(page).toHaveURL(/\/login\?redirect=/)
     })

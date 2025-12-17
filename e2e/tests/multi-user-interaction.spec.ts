@@ -175,82 +175,81 @@ test.describe('Multi-User Interaction', () => {
   })
 
   test.describe('Anonymous vs Named Answers', () => {
-    test('answers show names when showNames is enabled', async ({ user1Page, browser }) => {
-      const createPage = new CreateMeetingPage(user1Page)
-      await createPage.goto()
+    test('answers show or hide names based on showNames setting', async ({ user1Page, browser }) => {
+      // First test: showNames enabled
+      const createPage1 = new CreateMeetingPage(user1Page)
+      await createPage1.goto()
 
-      await createPage.createMeeting({
+      await createPage1.createMeeting({
         title: 'Show Names Test',
         questions: [{ text: 'Who are you?' }],
         showNames: true
       })
 
-      const facilitatorPage = new FacilitatorSessionPage(user1Page)
-      const participantCode = await facilitatorPage.getParticipantCode()
+      const facilitatorPage1 = new FacilitatorSessionPage(user1Page)
+      const participantCode1 = await facilitatorPage1.getParticipantCode()
 
-      await facilitatorPage.startMeetingButton.click()
+      await facilitatorPage1.startMeetingButton.click()
 
-      const participantContext = await browser.newContext()
-      const participantPage = await participantContext.newPage()
+      const participantContext1 = await browser.newContext()
+      const participantPage1 = await participantContext1.newPage()
 
-      const joinPage = new JoinMeetingPage(participantPage)
-      await joinPage.goto()
-      await joinPage.joinMeeting(participantCode, 'Named User')
+      const joinPage1 = new JoinMeetingPage(participantPage1)
+      await joinPage1.goto()
+      await joinPage1.joinMeeting(participantCode1, 'Named User')
 
-      await facilitatorPage.waitForParticipants(1)
-      await facilitatorPage.startQuestionButton.click()
+      await facilitatorPage1.waitForParticipants(1)
+      await facilitatorPage1.startQuestionButton.click()
 
-      const session = new ParticipantSessionPage(participantPage)
-      await session.waitForQuestion()
-      await session.submitAnswer('My answer here')
+      const session1 = new ParticipantSessionPage(participantPage1)
+      await session1.waitForQuestion()
+      await session1.submitAnswer('My answer here')
 
-      await facilitatorPage.waitForAnswers(1, 1)
-      await facilitatorPage.revealAnswersButton.click()
+      await facilitatorPage1.waitForAnswers(1, 1)
+      await facilitatorPage1.revealAnswersButton.click()
 
-      // Should show the participant name with the answer
+      // Original: answers show names when showNames is enabled
       await expect(user1Page.getByText('Named User')).toBeVisible()
 
-      await participantContext.close()
-    })
+      await participantContext1.close()
 
-    test('answers are anonymous when showNames is disabled', async ({ user1Page, browser }) => {
-      const createPage = new CreateMeetingPage(user1Page)
-      await createPage.goto()
+      // Second test: showNames disabled
+      const createPage2 = new CreateMeetingPage(user1Page)
+      await createPage2.goto()
 
-      await createPage.createMeeting({
+      await createPage2.createMeeting({
         title: 'Anonymous Test',
         questions: [{ text: 'Secret?' }],
         showNames: false
       })
 
-      const facilitatorPage = new FacilitatorSessionPage(user1Page)
-      const participantCode = await facilitatorPage.getParticipantCode()
+      const facilitatorPage2 = new FacilitatorSessionPage(user1Page)
+      const participantCode2 = await facilitatorPage2.getParticipantCode()
 
-      await facilitatorPage.startMeetingButton.click()
+      await facilitatorPage2.startMeetingButton.click()
 
-      const participantContext = await browser.newContext()
-      const participantPage = await participantContext.newPage()
+      const participantContext2 = await browser.newContext()
+      const participantPage2 = await participantContext2.newPage()
 
-      const joinPage = new JoinMeetingPage(participantPage)
-      await joinPage.goto()
-      await joinPage.joinMeeting(participantCode, 'Hidden User')
+      const joinPage2 = new JoinMeetingPage(participantPage2)
+      await joinPage2.goto()
+      await joinPage2.joinMeeting(participantCode2, 'Hidden User')
 
-      await facilitatorPage.waitForParticipants(1)
-      await facilitatorPage.startQuestionButton.click()
+      await facilitatorPage2.waitForParticipants(1)
+      await facilitatorPage2.startQuestionButton.click()
 
-      const session = new ParticipantSessionPage(participantPage)
-      await session.waitForQuestion()
-      await session.submitAnswer('Anonymous answer')
+      const session2 = new ParticipantSessionPage(participantPage2)
+      await session2.waitForQuestion()
+      await session2.submitAnswer('Anonymous answer')
 
-      await facilitatorPage.waitForAnswers(1, 1)
-      await facilitatorPage.revealAnswersButton.click()
+      await facilitatorPage2.waitForAnswers(1, 1)
+      await facilitatorPage2.revealAnswersButton.click()
 
-      // Answer should be visible but name should not be shown
-      await expect(facilitatorPage.getRevealedAnswer('Anonymous answer')).toBeVisible()
-      // The name shouldn't appear next to the answer
+      // Original: answers are anonymous when showNames is disabled
+      await expect(facilitatorPage2.getRevealedAnswer('Anonymous answer')).toBeVisible()
       await expect(user1Page.getByText('Hidden User')).not.toBeVisible()
 
-      await participantContext.close()
+      await participantContext2.close()
     })
   })
 
@@ -299,91 +298,94 @@ test.describe('Multi-User Interaction', () => {
   })
 
   test.describe('Meeting Lifecycle Events', () => {
-    test('participant receives meeting ended event', async ({ user1Page, browser }) => {
-      const createPage = new CreateMeetingPage(user1Page)
-      await createPage.goto()
+    test('participant receives meeting ended event and late joiner sees state', async ({
+      user1Page,
+      browser
+    }) => {
+      // Part 1: Test meeting ended event
+      const createPage1 = new CreateMeetingPage(user1Page)
+      await createPage1.goto()
 
-      await createPage.createMeeting({
+      await createPage1.createMeeting({
         title: 'End Event Test',
         questions: [{ text: 'Final question?' }]
       })
 
-      const facilitatorPage = new FacilitatorSessionPage(user1Page)
-      const participantCode = await facilitatorPage.getParticipantCode()
+      const facilitatorPage1 = new FacilitatorSessionPage(user1Page)
+      const participantCode1 = await facilitatorPage1.getParticipantCode()
 
-      await facilitatorPage.startMeetingButton.click()
+      await facilitatorPage1.startMeetingButton.click()
 
-      const participantContext = await browser.newContext()
-      const participantPage = await participantContext.newPage()
+      const participantContext1 = await browser.newContext()
+      const participantPage1 = await participantContext1.newPage()
 
-      const joinPage = new JoinMeetingPage(participantPage)
-      await joinPage.goto()
-      await joinPage.joinMeeting(participantCode, 'End User')
+      const joinPage1 = new JoinMeetingPage(participantPage1)
+      await joinPage1.goto()
+      await joinPage1.joinMeeting(participantCode1, 'End User')
 
-      await facilitatorPage.waitForParticipants(1)
-      await facilitatorPage.startQuestionButton.click()
+      await facilitatorPage1.waitForParticipants(1)
+      await facilitatorPage1.startQuestionButton.click()
 
-      const session = new ParticipantSessionPage(participantPage)
-      await session.waitForQuestion()
-      await session.submitAnswer('Last answer')
+      const session1 = new ParticipantSessionPage(participantPage1)
+      await session1.waitForQuestion()
+      await session1.submitAnswer('Last answer')
 
-      await facilitatorPage.waitForAnswers(1, 1)
-      await facilitatorPage.revealAnswersButton.click()
+      await facilitatorPage1.waitForAnswers(1, 1)
+      await facilitatorPage1.revealAnswersButton.click()
 
       // End the meeting
-      await facilitatorPage.endMeetingButton.click()
+      await facilitatorPage1.endMeetingButton.click()
 
-      // Participant should be redirected to home
-      await expect(participantPage).toHaveURL('/')
+      // Original: participant receives meeting ended event
+      await expect(participantPage1).toHaveURL('/')
 
-      await participantContext.close()
-    })
+      await participantContext1.close()
 
-    test('late joiner sees current meeting state', async ({ user1Page, browser }) => {
-      const createPage = new CreateMeetingPage(user1Page)
-      await createPage.goto()
+      // Part 2: Test late joiner sees current meeting state
+      const createPage2 = new CreateMeetingPage(user1Page)
+      await createPage2.goto()
 
-      await createPage.createMeeting({
+      await createPage2.createMeeting({
         title: 'Late Joiner Test',
         questions: [{ text: 'First?' }, { text: 'Second?' }]
       })
 
-      const facilitatorPage = new FacilitatorSessionPage(user1Page)
-      const participantCode = await facilitatorPage.getParticipantCode()
+      const facilitatorPage2 = new FacilitatorSessionPage(user1Page)
+      const participantCode2 = await facilitatorPage2.getParticipantCode()
 
-      await facilitatorPage.startMeetingButton.click()
+      await facilitatorPage2.startMeetingButton.click()
 
       // First participant joins and completes Q1
       const context1 = await browser.newContext()
       const page1 = await context1.newPage()
       const join1 = new JoinMeetingPage(page1)
       await join1.goto()
-      await join1.joinMeeting(participantCode, 'Early Bird')
+      await join1.joinMeeting(participantCode2, 'Early Bird')
 
-      await facilitatorPage.waitForParticipants(1)
-      await facilitatorPage.startQuestionButton.click()
+      await facilitatorPage2.waitForParticipants(1)
+      await facilitatorPage2.startQuestionButton.click()
 
-      const session1 = new ParticipantSessionPage(page1)
-      await session1.waitForQuestion()
-      await session1.submitAnswer('First answer')
+      const session1a = new ParticipantSessionPage(page1)
+      await session1a.waitForQuestion()
+      await session1a.submitAnswer('First answer')
 
-      await facilitatorPage.waitForAnswers(1, 1)
-      await facilitatorPage.revealAnswersButton.click()
-      await facilitatorPage.nextQuestionButton.click()
+      await facilitatorPage2.waitForAnswers(1, 1)
+      await facilitatorPage2.revealAnswersButton.click()
+      await facilitatorPage2.nextQuestionButton.click()
 
       // Late joiner joins during Q2
       const context2 = await browser.newContext()
       const page2 = await context2.newPage()
       const join2 = new JoinMeetingPage(page2)
       await join2.goto()
-      await join2.joinMeeting(participantCode, 'Late Comer')
+      await join2.joinMeeting(participantCode2, 'Late Comer')
 
-      await facilitatorPage.waitForParticipants(2)
+      await facilitatorPage2.waitForParticipants(2)
 
       // Start Q2
-      await facilitatorPage.startQuestionButton.click()
+      await facilitatorPage2.startQuestionButton.click()
 
-      // Late joiner should see Q2
+      // Original: late joiner sees current meeting state
       const session2 = new ParticipantSessionPage(page2)
       await session2.waitForQuestion()
       await expect(page2.getByText('Second?')).toBeVisible()
