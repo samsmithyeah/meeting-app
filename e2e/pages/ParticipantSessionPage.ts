@@ -41,8 +41,6 @@ export class ParticipantSessionPage {
   async submitAnswer(text: string) {
     await this.answerInput.fill(text)
     await this.submitAnswerButton.click()
-    // Wait for the answer to appear in "Your Answers" section as confirmation
-    await this.getMyAnswerItem(text).waitFor({ state: 'visible', timeout: 10000 })
   }
 
   async waitForQuestion() {

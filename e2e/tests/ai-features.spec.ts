@@ -53,9 +53,9 @@ test.describe('AI Features', () => {
         const session = new ParticipantSessionPage(pages[i])
         await session.waitForQuestion()
         await session.submitAnswer(answers[i])
+        // Wait for this answer to be registered before submitting next
+        await facilitatorPage.waitForAnswers(i + 1, 3)
       }
-
-      await facilitatorPage.waitForAnswers(3, 3)
       await facilitatorPage.revealAnswersButton.click()
 
       // Wait for AI summary to appear (with longer timeout for API call)
@@ -115,9 +115,9 @@ test.describe('AI Features', () => {
         const session = new ParticipantSessionPage(pages[i])
         await session.waitForQuestion()
         await session.submitAnswer(answers[i])
+        // Wait for this answer to be registered before submitting next
+        await facilitatorPage.waitForAnswers(i + 1, 4)
       }
-
-      await facilitatorPage.waitForAnswers(4, 4)
       await facilitatorPage.revealAnswersButton.click()
 
       // Original: groups answers when Group with AI button is clicked
@@ -165,9 +165,9 @@ test.describe('AI Features', () => {
         const session = new ParticipantSessionPage(pages2[i])
         await session.waitForQuestion()
         await session.submitAnswer(answers2[i])
+        // Wait for this answer to be registered before submitting next
+        await facilitatorPage2.waitForAnswers(i + 1, 2)
       }
-
-      await facilitatorPage2.waitForAnswers(2, 2)
       await facilitatorPage2.revealAnswersButton.click()
 
       // Original: shows all answers in single group when fewer than 4 responses
