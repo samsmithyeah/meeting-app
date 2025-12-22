@@ -1,4 +1,4 @@
-import { Page, Locator } from '@playwright/test'
+import { Page, Locator, expect } from '@playwright/test'
 
 export class ParticipantSessionPage {
   readonly page: Page
@@ -40,6 +40,8 @@ export class ParticipantSessionPage {
 
   async submitAnswer(text: string) {
     await this.answerInput.fill(text)
+    // Ensure the input value is set before clicking (React state sync)
+    await expect(this.answerInput).toHaveValue(text)
     await this.submitAnswerButton.click()
   }
 
