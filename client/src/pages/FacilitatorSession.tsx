@@ -155,7 +155,10 @@ export default function FacilitatorSession() {
     <div className="min-h-screen bg-gray-100">
       {/* Dismissible error notification */}
       {socketError && (
-        <div className="fixed top-4 right-4 z-50 max-w-md bg-red-50 border border-red-200 rounded-lg shadow-lg p-4">
+        <div
+          role="alert"
+          className="fixed top-4 right-4 z-50 max-w-md bg-red-50 border border-red-200 rounded-lg shadow-lg p-4"
+        >
           <div className="flex items-start gap-3">
             <div className="flex-1">
               <p className="text-sm text-red-800">{socketError}</p>

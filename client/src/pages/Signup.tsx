@@ -1,5 +1,5 @@
 import { useState, type FormEvent, type ChangeEvent } from 'react'
-import { useSearchParams, Link } from 'react-router-dom'
+import { useNavigate, useSearchParams, Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import GoogleIcon from '../components/GoogleIcon'
 
@@ -66,6 +66,7 @@ function getPasswordStrength(password: string): { score: number; label: string; 
 }
 
 export default function Signup() {
+  const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const { signUp, signInWithGoogle } = useAuth()
 
@@ -162,12 +163,16 @@ export default function Signup() {
 
     setIsLoading(true)
 
-    const { error } = await signUp(email, password, name.trim())
+    const { data, error } = await signUp(email, password, name.trim())
 
     if (error) {
       setError(error.message)
       setIsLoading(false)
+    } else if (data.session) {
+      // User is automatically signed in when email confirmation is disabled
+      navigate(redirectTo)
     } else {
+      // Email confirmation is required
       setSuccess('Check your email to confirm your account, then sign in.')
       setIsLoading(false)
     }
@@ -201,9 +206,16 @@ export default function Signup() {
           <h1 className="text-2xl font-bold text-gray-900 mb-2">Create Account</h1>
           <p className="text-gray-600 mb-6">Sign up to create and manage meetings</p>
 
-          {error && <div className="bg-red-50 text-red-600 p-3 rounded-lg mb-4">{error}</div>}
+          {error && (
+            <div role="alert" className="bg-red-50 text-red-600 p-3 rounded-lg mb-4">
+              {error}
+            </div>
+          )}
+
           {success && (
-            <div className="bg-green-50 text-green-600 p-3 rounded-lg mb-4">{success}</div>
+            <div role="status" className="bg-green-50 text-green-600 p-3 rounded-lg mb-4">
+              {success}
+            </div>
           )}
 
           <form onSubmit={handleSubmit} className="space-y-4" noValidate>

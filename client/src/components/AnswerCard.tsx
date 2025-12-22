@@ -42,6 +42,7 @@ const AnswerCard = forwardRef<
     return (
       <div
         ref={ref}
+        role="article"
         style={style}
         className={`p-4 bg-gray-50 rounded-lg border border-gray-100 ${
           isDragging ? 'shadow-lg opacity-90' : ''

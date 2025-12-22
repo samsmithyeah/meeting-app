@@ -2,7 +2,10 @@ import OpenAI from 'openai'
 import type { GroupAnswersAIResult } from '../types/index.js'
 
 const openai = process.env.OPENAI_API_KEY
-  ? new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
+  ? new OpenAI({
+      apiKey: process.env.OPENAI_API_KEY,
+      baseURL: process.env.OPENAI_BASE_URL
+    })
   : null
 
 const GROUPING_SYSTEM_PROMPT = `You are a meeting facilitator assistant that groups participant responses by theme.
