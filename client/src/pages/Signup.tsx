@@ -155,6 +155,7 @@ export default function Signup() {
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
     setError('')
+    setSuccess('')
 
     if (!validateForm()) {
       return
