@@ -75,6 +75,7 @@ export default function Signup() {
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [error, setError] = useState('')
+  const [success, setSuccess] = useState('')
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({})
   const [touched, setTouched] = useState<Record<string, boolean>>({})
   const [isLoading, setIsLoading] = useState(false)
@@ -161,14 +162,18 @@ export default function Signup() {
 
     setIsLoading(true)
 
-    const { error } = await signUp(email, password, name.trim())
+    const { data, error } = await signUp(email, password, name.trim())
 
     if (error) {
       setError(error.message)
       setIsLoading(false)
-    } else {
+    } else if (data.session) {
       // User is automatically signed in when email confirmation is disabled
       navigate(redirectTo)
+    } else {
+      // Email confirmation is required
+      setSuccess('Check your email to confirm your account, then sign in.')
+      setIsLoading(false)
     }
   }
 
@@ -203,6 +208,12 @@ export default function Signup() {
           {error && (
             <div role="alert" className="bg-red-50 text-red-600 p-3 rounded-lg mb-4">
               {error}
+            </div>
+          )}
+
+          {success && (
+            <div role="status" className="bg-green-50 text-green-600 p-3 rounded-lg mb-4">
+              {success}
             </div>
           )}
 

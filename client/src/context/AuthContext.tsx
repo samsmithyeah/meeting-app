@@ -8,7 +8,11 @@ interface AuthContextValue {
   loading: boolean
   displayName: string | null
   signIn: (email: string, password: string) => Promise<{ error: AuthError | null }>
-  signUp: (email: string, password: string, name: string) => Promise<{ error: AuthError | null }>
+  signUp: (
+    email: string,
+    password: string,
+    name: string
+  ) => Promise<{ data: { session: Session | null }; error: AuthError | null }>
   signInWithGoogle: () => Promise<{ error: AuthError | null }>
   signOut: () => Promise<void>
 }
@@ -47,7 +51,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   }, [])
 
   const signUp = useCallback(async (email: string, password: string, name: string) => {
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
@@ -56,7 +60,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         }
       }
     })
-    return { error }
+    return { data: { session: data.session }, error }
   }, [])
 
   const signInWithGoogle = useCallback(async () => {
